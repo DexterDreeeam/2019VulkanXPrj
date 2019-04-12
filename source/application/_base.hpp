@@ -1,0 +1,71 @@
+
+/*
+ *
+ *  //-- DexterDreeeam copyright --//
+ *
+ *  File Name:
+ *
+ *    >> _base.hpp
+ *
+ *  Abstract:
+ *
+ *    >> xPrj base application class
+ *
+ */
+
+#if !defined(___BASE_HPP__)
+#define ___BASE_HPP__
+
+//---------------------------
+
+#include "../core/Macros.hpp"
+#include "../core/VkInstance.hpp"
+
+_x_NS_START_
+
+class app
+{
+public_fun:
+    app()
+    { }
+
+    void initVulkan(t_U32 width, t_U32 height, const char * title)
+    {
+        c_vk_desc vkDesc;
+        vkDesc.width = width;
+        vkDesc.height = height;
+        vkDesc.title = title;
+        p_vk = new c_vk(&vkDesc);
+    }
+
+    void initApp()
+    { }
+
+    void mainLoop()
+    {
+        while (p_vk->is_glfwNotClose())
+        {
+            p_vk->f_glfwPollEvents();
+            p_vk->f_loopBody();
+
+            //todo
+        }
+    }
+
+    void cleanup()
+    {
+        delete p_vk;
+    }
+
+private_mem:
+    c_vk * p_vk;
+
+private_fun:
+
+};
+
+_x_NS_END_
+
+//---------------------------
+
+#endif

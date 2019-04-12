@@ -65,21 +65,26 @@
 
 //------------------------------------
 
-typedef bool tBool;
-typedef signed char tS8;
-typedef unsigned char tU8;
-typedef signed short tS16;
-typedef unsigned short tU16;
-typedef signed int tS32;
-typedef unsigned int tU32;
-typedef signed long int tS64;
-typedef unsigned long int tU64;
-typedef signed long long int tS128;
-typedef unsigned long long int tU128;
-typedef float tF64;
-typedef float tFloat;
-typedef double tF128;
-typedef double tDouble;
+#define _x_NS_START_ namespace x_NS{
+#define _x_NS_END_   }
+
+//------------------------------------
+
+typedef bool t_Bool;
+typedef signed char t_S8;
+typedef unsigned char t_U8;
+typedef signed short t_S16;
+typedef unsigned short t_U16;
+typedef signed int t_S32;
+typedef unsigned int t_U32;
+typedef signed long int t_S64;
+typedef unsigned long int t_U64;
+typedef signed long long int t_S128;
+typedef unsigned long long int t_U128;
+typedef float t_F32;
+typedef float t_Float;
+typedef double t_F64;
+typedef double t_Double;
 
 //------------------------------------
 

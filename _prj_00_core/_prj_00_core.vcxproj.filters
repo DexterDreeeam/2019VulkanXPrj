@@ -1,27 +1,42 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="source">
+      <UniqueIdentifier>{63cbfbf0-1055-45b0-b6f8-a784ad5af71c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="source\core">
+      <UniqueIdentifier>{ee3750a6-a13d-47f9-866c-65ee626ad18e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="source\math">
+      <UniqueIdentifier>{e7cbf2bd-b409-4fa0-8f1d-a89ab53d19ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\application">
+      <UniqueIdentifier>{545b27b1-386b-4d28-b82c-f5b302d64962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\utility">
+      <UniqueIdentifier>{6f02c387-3a40-494e-bcc7-f5302edfa24b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\head\A_Macros.hpp">
-      <Filter>头文件</Filter>
+    <ClInclude Include="..\source\core\Macros.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\VkInstance.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\math\math_x.hpp">
+      <Filter>source\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\application\_base.hpp">
+      <Filter>source\application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\utility\print_x.hpp">
+      <Filter>source\utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\cpp\A_VkInstance.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="..\source\core\VkInstance.cpp">
+      <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
