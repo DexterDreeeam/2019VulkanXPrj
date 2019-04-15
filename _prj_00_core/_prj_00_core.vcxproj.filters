@@ -33,10 +33,16 @@
     <ClInclude Include="..\source\utility\print_x.hpp">
       <Filter>source\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\utility\ValidationLayer.hpp">
+      <Filter>source\utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\VkInstance.cpp">
       <Filter>source\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\utility\ValidationLayer.cpp">
+      <Filter>source\utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

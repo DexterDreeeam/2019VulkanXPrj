@@ -18,7 +18,6 @@
 
 //------------------------------------
 
-//#define DEBUG_MODE_X
 #include "../core/Macros.hpp"
 
 _x_NS_START_

@@ -13,6 +13,7 @@
  *
  */
 
+#include "../core/Macros.hpp"
 #include "../application/HelloTriangle.hpp"
 
 using namespace x_NS;

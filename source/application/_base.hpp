@@ -31,10 +31,12 @@ public_fun:
 
     void initVulkan(t_U32 width, t_U32 height, const char * title)
     {
-        c_vk_desc vkDesc;
-        vkDesc.width = width;
-        vkDesc.height = height;
-        vkDesc.title = title;
+        c_vk::c_vk_xdesc vkDesc = {};
+        vkDesc.glfw_xdesc.width = width;
+        vkDesc.glfw_xdesc.height = height;
+        vkDesc.glfw_xdesc.title = title;
+        vkDesc.vkInstance_xdesc.applicationName = "VkApp";
+        vkDesc.vkInstance_xdesc.engineName = "xEngine";
         p_vk = new c_vk(&vkDesc);
     }
 
@@ -43,7 +45,7 @@ public_fun:
 
     void mainLoop()
     {
-        while (p_vk->is_glfwNotClose())
+        while (p_vk->is_glfwShouldNotClose())
         {
             p_vk->f_glfwPollEvents();
             p_vk->f_loopBody();

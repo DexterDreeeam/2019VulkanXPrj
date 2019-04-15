@@ -24,9 +24,11 @@
     <ClInclude Include="..\source\core\VkInstance.hpp" />
     <ClInclude Include="..\source\math\math_x.hpp" />
     <ClInclude Include="..\source\utility\print_x.hpp" />
+    <ClInclude Include="..\source\utility\ValidationLayer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\VkInstance.cpp" />
+    <ClCompile Include="..\source\utility\ValidationLayer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
