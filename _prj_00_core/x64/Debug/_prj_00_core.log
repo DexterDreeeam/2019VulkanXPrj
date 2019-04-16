@@ -1,2 +1,15 @@
-﻿  ValidationLayer.cpp
+﻿  VkInstance.cpp
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(56): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk::c_vk_xdesc”的左侧
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(110): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(43): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(118): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(20): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(43): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(28): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(186): warning C4099: “x_NS::c_vk::QueueFamilyIndices”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(58): note: 参见“x_NS::c_vk::QueueFamilyIndices”的声明
+  ValidationLayer.cpp
+  正在生成代码...
   _prj_00_core.vcxproj -> D:\xProgramGit\2019VulkanXPrj\_lib_internal\xcore.lib

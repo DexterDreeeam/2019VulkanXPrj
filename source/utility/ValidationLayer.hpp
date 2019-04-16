@@ -28,12 +28,12 @@
 #endif __CODE_END__(DEBUG_X)
 
 #if __CODE_START__(DEBUG_X)
-const ::std::vector<const char *> validationLayers;
+    const ::std::vector<const char *> validationLayers;
 #endif __CODE_END__(DEBUG_X)
 
 _x_NS_START_
 
-bool ValidationLayerSupport();
+t_Bool ValidationLayerSupport();
 
 ::std::vector<const char *> ValidationRequiredExtensions();
 
