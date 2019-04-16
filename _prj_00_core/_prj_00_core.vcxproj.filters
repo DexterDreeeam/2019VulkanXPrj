@@ -21,9 +21,6 @@
     <ClInclude Include="..\source\core\Macros.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\core\VkInstance.hpp">
-      <Filter>source\core</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\math\math_x.hpp">
       <Filter>source\math</Filter>
     </ClInclude>
@@ -36,6 +33,12 @@
     <ClInclude Include="..\source\utility\ValidationLayer.hpp">
       <Filter>source\utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\core\Presentation.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\VkInstance.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\VkInstance.cpp">
@@ -43,6 +46,9 @@
     </ClCompile>
     <ClCompile Include="..\source\utility\ValidationLayer.cpp">
       <Filter>source\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Presentation.cpp">
+      <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -35,8 +35,8 @@ public_fun:
         vkDesc.glfw_xdesc.width = width;
         vkDesc.glfw_xdesc.height = height;
         vkDesc.glfw_xdesc.title = title;
-        vkDesc.vkInstance_xdesc.applicationName = "VkApp";
-        vkDesc.vkInstance_xdesc.engineName = "xEngine";
+        vkDesc.vkInstance_xdesc.applicationName = __XVK_APPLICATION_NAME__;
+        vkDesc.vkInstance_xdesc.engineName = __XVK_ENGINE_NAME__;
         p_vk = new c_vk(&vkDesc);
     }
 

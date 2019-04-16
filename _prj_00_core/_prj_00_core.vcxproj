@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClInclude Include="..\source\application\_base.hpp" />
     <ClInclude Include="..\source\core\Macros.hpp" />
+    <ClInclude Include="..\source\core\Presentation.hpp" />
     <ClInclude Include="..\source\core\VkInstance.hpp" />
     <ClInclude Include="..\source\math\math_x.hpp" />
     <ClInclude Include="..\source\utility\print_x.hpp" />
     <ClInclude Include="..\source\utility\ValidationLayer.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\core\Presentation.cpp" />
     <ClCompile Include="..\source\core\VkInstance.cpp" />
     <ClCompile Include="..\source\utility\ValidationLayer.cpp" />
   </ItemGroup>

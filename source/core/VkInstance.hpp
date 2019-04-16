@@ -17,10 +17,17 @@
 #define __VK_INSTANCE_HPP__
 
 #include "../core/Macros.hpp"
+
+#define GLFW_INCLUDE_VULKAN
 #include "../../_lib_external/glfw/inc/glfw3.h"
-#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
+//#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
+
+#include "../core/Presentation.hpp" 
+
 #include <vector>
 #include <map>
+#include <set>
+#include <string>
 //#include <optional>
 
 #if __CODE_START__(DEBUG_X)
@@ -38,6 +45,8 @@ _x_NS_START_
 class c_vk
 {
 public_def:
+    friend class c_vk_presentation;
+
     typedef struct c_vk_xdesc
     {
         struct glfw_xdesc
@@ -52,36 +61,33 @@ public_def:
             const char * applicationName;
             const char * engineName;
         } vkInstance_xdesc;
+    }c_vk_xdesc;
 
-    };
-
-    struct QueueFamilyIndices 
-    {
-        //::std::optional<uint32_t> graphicsFamily;
-        t_S32 graphicsFamily = -1;
-        t_Bool isComplete()
-        {
-            return graphicsFamily != -1;
-        }
-    };
+    typedef c_vk_presentation::SwapChainSupportDetails SwapChainSupportDetails;
+    typedef c_vk_presentation::QueueFamilyIndices QueueFamilyIndices;
 
 public_fun:
     c_vk(c_vk_xdesc * vkDesc)
+        : m_presentation()
     {
         f_glfwInit(&(vkDesc->glfw_xdesc));
         f_createVkInstance(&(vkDesc->vkInstance_xdesc));
     #if __CODE_START__(DEBUG_X)
         f_setupDebugCallback();
     #endif __CODE_END__(DEBUG_X)
+            m_presentation.f_createSurface(m_vkInstance, m_glfwWindow);
         f_selectPhysicalDevice();
         f_createLogicalDevice();
+            m_presentation.f_createSwapChain();
     }
     ~c_vk()
     {
-        f_destroyDevice();
+            m_presentation.f_destroySwapChain();
+        f_destroyLogicalDevice();
     #if __CODE_START__(DEBUG_X)
         ValidationDestroyDebugReportCallbackEXT(m_vkInstance, m_callback, nullptr);
     #endif __CODE_END__(DEBUG_X)
+            m_presentation.f_destroySurface(m_vkInstance);
         f_destroyVkInstance();
         f_glfwDestroy();
     }
@@ -100,6 +106,9 @@ private_mem:
     VkPhysicalDevice m_physicalDevice; //physical device handle -> Type: [VkPhysicalDevice]
     VkDevice m_device; //logical device handle -> Type: [VkDevice]
     VkQueue m_graphicsQueue; //graphics queue in device -> Type: [VkQueue]
+    VkQueue m_presentQueue; //present queue in device -> Type: [VkQueue]
+
+    c_vk_presentation m_presentation; //presentation functions -> Type: [c_vk_presentation] -> Head: <Presentation.hpp>
 
     #if __CODE_START__(DEBUG_X)
         VkDebugReportCallbackEXT m_callback; //validation layer callback handle -> Type: [VkDebugReportCallbackEXT]
@@ -127,9 +136,22 @@ private_fun:
     void f_selectPhysicalDevice();
     void f_createLogicalDevice();
     t_U32 f_deviceSuitabilityRate(VkPhysicalDevice device);
-    t_Bool is_deviceSuitable(VkPhysicalDevice device);
-    QueueFamilyIndices f_findQueueFamilies(VkPhysicalDevice device);
-    void f_destroyDevice(){ vkDestroyDevice(m_device, nullptr); }
+    t_Bool is_deviceExtensionSuitable(VkPhysicalDevice device);
+    t_Bool is_deviceQueueFamilySuitable(VkPhysicalDevice device);
+    void f_destroyLogicalDevice(){ vkDestroyDevice(m_device, nullptr); }
+
+    //---------Others---------//
+    #if __CODE_START__(DEBUG_X)
+        t_Bool is_EverythingSuitable(VkPhysicalDevice device)
+        {
+            SwapChainSupportDetails details = m_presentation.f_querySwapChainSupport();
+            return 
+                is_deviceExtensionSuitable(m_physicalDevice) && 
+                is_deviceQueueFamilySuitable(m_physicalDevice) &&
+                !details.formats.empty() &&
+                !details.presentModes.empty();
+        }
+    #endif __CODE_END__(DEBUG_X)
 };
 
 _x_NS_END_

@@ -13,7 +13,7 @@
  *
  */
 
-//#define DEBUG_MODE_X                                 //<<<<<<<<--------- Debug Define
+#define DEBUG_MODE_X                                 //<<<<<<<<--------- Debug Define
 
 //#define VALIDATION_MODE_X
 
@@ -29,6 +29,13 @@
 
 #ifndef ___A_MACROS_HPP___
 #define ___A_MACROS_HPP___
+
+//------------------------------------
+
+#define __XVK_VERSION__ VK_MAKE_VERSION(1, 1, 0)
+#define __XVK_API_VERSION__ VK_API_VERSION_1_1
+#define __XVK_APPLICATION_NAME__ "VkApp";
+#define __XVK_ENGINE_NAME__ "xEngine";
 
 //------------------------------------
 

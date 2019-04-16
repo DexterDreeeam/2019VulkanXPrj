@@ -212,8 +212,8 @@ extern "C" {
 #endif /* OpenGL and OpenGL ES headers */
 
 #if defined(GLFW_INCLUDE_VULKAN)
-  //#include "..\..\LunargVulkan_1_1_92_1\inc\vulkan\vulkan.h"
-  #include <vulkan/vulkan.h>
+  #include "..\..\LunargVulkan_1_1_92_1\inc\vulkan\vulkan.h"
+  //#include <vulkan/vulkan.h>
 #endif /* Vulkan header */
 
 #if defined(GLFW_DLL) && defined(_GLFW_BUILD_DLL)

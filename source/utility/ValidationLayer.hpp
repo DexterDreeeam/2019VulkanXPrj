@@ -19,19 +19,19 @@
 #define __VALIDATION_LAYER_HPP__
 
 #include "../core/Macros.hpp"
-#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
+
+#define GLFW_INCLUDE_VULKAN
 #include "../../_lib_external/glfw/inc/glfw3.h"
+//#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
 #include <vector>
 
 #if __CODE_START__(DEBUG_X)
     #include <iostream>
 #endif __CODE_END__(DEBUG_X)
 
-#if __CODE_START__(DEBUG_X)
-    const ::std::vector<const char *> validationLayers;
-#endif __CODE_END__(DEBUG_X)
-
 _x_NS_START_
+
+extern const std::vector<const char *> g_validationLayers;
 
 t_Bool ValidationLayerSupport();
 

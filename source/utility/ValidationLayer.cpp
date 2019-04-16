@@ -20,7 +20,8 @@
 _x_NS_START_
 
 #if __CODE_START__(DEBUG_X)
-const ::std::vector<const char *> validationLayers =
+
+const std::vector<const char *> g_validationLayers =
 {
     "VK_LAYER_LUNARG_standard_validation"
 };
@@ -33,7 +34,7 @@ t_Bool ValidationLayerSupport()
     availableLayers.resize(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char * layerName : validationLayers)
+    for (const char * layerName : g_validationLayers)
     {
         bool layerFound = false;
         for (const auto & layerProperties : availableLayers)
