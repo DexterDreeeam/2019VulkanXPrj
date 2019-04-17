@@ -16,10 +16,14 @@
 #if !defined(__PRESENTATION_HPP__)
 #define __PRESENTATION_HPP__
 
-#include "../core/Macros.hpp"
 #define GLFW_INCLUDE_VULKAN
 #include "../../_lib_external/glfw/inc/glfw3.h"
 //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
+
+#include "../core/Macros.hpp"
+#include "../core/CoreGlobal.hpp"
+#include "../core/VkBase.hpp"
+
 #include <vector>
 #include <algorithm>
 
@@ -32,8 +36,6 @@
 #endif __CODE_END__(DEBUG_X)
 
 _x_NS_START_
-
-extern const ::std::vector<const char * > g_deviceExtensions;
 
 class c_vk_presentation
 {
@@ -59,19 +61,16 @@ public_def:
     }SwapChainSupportDetails;
 
 public_fun:
-    c_vk_presentation() { };
+    c_vk_presentation(c_vk_base * base) : p_base(base) { };
     ~c_vk_presentation() { };
 
 private_mem:
-    t_U32 m_width, m_height;
-    VkPhysicalDevice m_physicalDevice; //physical device handle -> Type: [VkPhysicalDevice]
-    VkDevice m_device; //logical device handle -> Type: [VkDevice]
+    c_vk_base * p_base;
+
     VkSurfaceKHR m_surface;
-    
     VkSwapchainKHR m_swapChain;
     ::std::vector<VkImage> m_swapChainImages;
-    VkFormat m_swapChainImageFormat;
-    VkExtent2D m_swapChainExtent;
+    ::std::vector<VkImageView> m_swapChainImageViews;
 
 private_fun:
     //---------Surface---------//
@@ -84,7 +83,11 @@ private_fun:
     VkPresentModeKHR f_chooseSwapPresentMode(const ::std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D f_chooseSwapExtent(const VkSurfaceCapabilitiesKHR & capabilities);
     void f_createSwapChain();
-    void f_destroySwapChain(){ vkDestroySwapchainKHR(m_device, m_swapChain, nullptr); }
+    void f_destroySwapChain(){ vkDestroySwapchainKHR(p_base->m_device, m_swapChain, nullptr); }
+
+    //---------ImageView---------//
+    void f_createImageViews();
+    void f_destroyImageViews();
 
     //---------Others---------//
     QueueFamilyIndices f_findQueueFamilies();

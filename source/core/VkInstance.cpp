@@ -14,18 +14,22 @@
  */
 
 #include "../core/VkInstance.hpp"
-#include "../utility/ValidationLayer.hpp"
 
 _x_NS_START_
+
+const ::std::vector<const char * > g_deviceExtensions =
+{
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 void c_vk::f_glfwInit(class c_vk_xdesc::glfw_xdesc * glfw_xdesc)
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    m_glfwWindow = glfwCreateWindow(glfw_xdesc->width, glfw_xdesc->height, glfw_xdesc->title, nullptr, nullptr);
-    m_presentation.m_width = glfw_xdesc->width;
-    m_presentation.m_height = glfw_xdesc->height;
+    m_base.m_glfwWindow = glfwCreateWindow(glfw_xdesc->width, glfw_xdesc->height, glfw_xdesc->title, nullptr, nullptr);
+    m_base.m_swapChainExtent.width = glfw_xdesc->width;
+    m_base.m_swapChainExtent.height = glfw_xdesc->height;
 }
 
 void c_vk::f_createVkInstance(class c_vk_xdesc::vkInstance_xdesc * vkInstance_xdesc)
@@ -79,7 +83,7 @@ void c_vk::f_createVkInstance(class c_vk_xdesc::vkInstance_xdesc * vkInstance_xd
         }
     #endif __CODE_END__(DEBUG_X)
 
-    if(vkCreateInstance(&createInfo, nullptr, &m_vkInstance) != VK_SUCCESS)
+    if(vkCreateInstance(&createInfo, nullptr, &m_base.m_vkInstance) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
         throw ::std::runtime_error("<VkInstance.cpp> Failed to create instance.");
@@ -98,7 +102,7 @@ void c_vk::f_createVkInstance(class c_vk_xdesc::vkInstance_xdesc * vkInstance_xd
             createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
             createInfo.pfnCallback = ValidationDebugCallback;
         }
-        if (ValidationCreateDebugReportCallbackEXT(m_vkInstance, &createInfo, nullptr, &m_callback) != VK_SUCCESS)
+        if (ValidationCreateDebugReportCallbackEXT(m_base.m_vkInstance, &createInfo, nullptr, &m_callback) != VK_SUCCESS)
         {
             throw ::std::runtime_error("<VkInstance.cpp> Failed to set up debug callbac.");
         }
@@ -109,7 +113,7 @@ void c_vk::f_createVkInstance(class c_vk_xdesc::vkInstance_xdesc * vkInstance_xd
 void c_vk::f_selectPhysicalDevice()
 {
     t_U32 deviceCount = 0;
-    vkEnumeratePhysicalDevices(m_vkInstance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(m_base.m_vkInstance, &deviceCount, nullptr);
     #if __CODE_START__(DEBUG_X)
         if (deviceCount == 0) 
         {
@@ -117,7 +121,7 @@ void c_vk::f_selectPhysicalDevice()
         }
     #endif __CODE_END__(DEBUG_X)
     ::std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(m_vkInstance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(m_base.m_vkInstance, &deviceCount, devices.data());
     
     ::std::multimap<int, VkPhysicalDevice> candidates;
     for (const auto & device : devices) 
@@ -128,14 +132,14 @@ void c_vk::f_selectPhysicalDevice()
     #if __CODE_START__(DEBUG_X)
         if (candidates.rbegin()->first > 0) 
         {
-            m_physicalDevice = m_presentation.m_physicalDevice = candidates.rbegin()->second;
+            m_base.m_physicalDevice = candidates.rbegin()->second;
         }
         else
         {
             throw ::std::runtime_error("<VkInstance.cpp> Failed to find a suitable GPU!");
         }
     #else
-        m_physicalDevice = m_presentation.m_physicalDevice = candidates.rbegin()->second;
+        m_base.m_physicalDevice = candidates.rbegin()->second;
     #endif __CODE_END__(DEBUG_X)
 }
 
@@ -225,7 +229,7 @@ void c_vk::f_createLogicalDevice()
             createInfo.enabledLayerCount = 0;
         #endif __CODE_END__(DEBUG_X)
 
-        if (vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS)
+        if (vkCreateDevice(m_base.m_physicalDevice, &createInfo, nullptr, &m_base.m_device) != VK_SUCCESS)
         {
         #if __CODE_START__(DEBUG_X)
             throw ::std::runtime_error("<VkInstance.cpp> Failed to create logical device!");
@@ -233,10 +237,8 @@ void c_vk::f_createLogicalDevice()
         }
     }
 
-    m_presentation.m_device = m_device;
-
-    vkGetDeviceQueue(m_device, indices.graphicsFamily, 0, &m_graphicsQueue);
-    vkGetDeviceQueue(m_device, indices.presentFamily, 0, &m_presentQueue);
+    vkGetDeviceQueue(m_base.m_device, indices.graphicsFamily, 0, &(m_base.m_graphicsQueue));
+    vkGetDeviceQueue(m_base.m_device, indices.presentFamily, 0, &(m_base.m_presentQueue));
 }
 
 _x_NS_END_

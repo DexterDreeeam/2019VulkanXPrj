@@ -21,7 +21,7 @@ _x_NS_START_
 
 #if __CODE_START__(DEBUG_X)
 
-const std::vector<const char *> g_validationLayers =
+const ::std::vector<const char *> g_validationLayers =
 {
     "VK_LAYER_LUNARG_standard_validation"
 };

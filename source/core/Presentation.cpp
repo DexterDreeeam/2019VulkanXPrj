@@ -17,11 +17,6 @@
 
 _x_NS_START_
 
-const ::std::vector<const char * > g_deviceExtensions =
-{
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
 void c_vk_presentation::f_createSurface(VkInstance instance, GLFWwindow * window)
 {
     if(glfwCreateWindowSurface(instance, window, nullptr, &m_surface) != VK_SUCCESS)
@@ -41,10 +36,10 @@ c_vk_presentation::QueueFamilyIndices c_vk_presentation::f_findQueueFamilies()
 {
     c_vk_presentation::QueueFamilyIndices indices;
     t_U32 queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(p_base->m_physicalDevice, &queueFamilyCount, nullptr);
 
     ::std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(p_base->m_physicalDevice, &queueFamilyCount, queueFamilies.data());
 
     int i = 0;
     for (const auto & queueFamily : queueFamilies)
@@ -56,7 +51,7 @@ c_vk_presentation::QueueFamilyIndices c_vk_presentation::f_findQueueFamilies()
         }
         //check if the gpu device support the queueFamily contains present queue
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, i, m_surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(p_base->m_physicalDevice, i, m_surface, &presentSupport);
         if (queueFamily.queueCount > 0 && presentSupport)
         {
             indices.presentFamily = i;
@@ -77,19 +72,19 @@ c_vk_presentation::SwapChainSupportDetails c_vk_presentation::f_querySwapChainSu
     t_U32 presentModeCount;
     SwapChainSupportDetails details;
     {
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &details.capabilities);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &formatCount, nullptr);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &presentModeCount, nullptr);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(p_base->m_physicalDevice, m_surface, &details.capabilities);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(p_base->m_physicalDevice, m_surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(p_base->m_physicalDevice, m_surface, &presentModeCount, nullptr);
     
         if (formatCount != 0)
         {
             details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &formatCount, details.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(p_base->m_physicalDevice, m_surface, &formatCount, details.formats.data());
         }
         if (presentModeCount != 0)
         {
             details.presentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &presentModeCount, details.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(p_base->m_physicalDevice, m_surface, &presentModeCount, details.presentModes.data());
         }
     }
     return details;
@@ -141,7 +136,7 @@ VkExtent2D c_vk_presentation::f_chooseSwapExtent(const VkSurfaceCapabilitiesKHR 
     }
     else 
     {
-        VkExtent2D actualExtent = { m_width, m_height };
+        VkExtent2D actualExtent = { p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height };
         {
             actualExtent.width = ::std::max(capabilities.minImageExtent.width, ::std::min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = ::std::max(capabilities.minImageExtent.height, ::std::min(capabilities.maxImageExtent.height, actualExtent.height));
@@ -197,19 +192,56 @@ void c_vk_presentation::f_createSwapChain()
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = VK_NULL_HANDLE;
     }
-    if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapChain) != VK_SUCCESS) 
+    if (vkCreateSwapchainKHR(p_base->m_device, &createInfo, nullptr, &m_swapChain) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
         throw ::std::runtime_error("<Presentation.cpp> Failed to create swap chain!");
     #endif __CODE_END__(DEBUG_X)
     }
 
-    vkGetSwapchainImagesKHR(m_device, m_swapChain, &imageCount, nullptr);
-    m_swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_device, m_swapChain, &imageCount, m_swapChainImages.data());
+    p_base->m_swapChainImageFormat = surfaceFormat.format;
+    p_base->m_swapChainExtent = extent;
 
-    m_swapChainImageFormat = surfaceFormat.format;
-    m_swapChainExtent = extent;
+    vkGetSwapchainImagesKHR(p_base->m_device, m_swapChain, &imageCount, nullptr);
+    m_swapChainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(p_base->m_device, m_swapChain, &imageCount, m_swapChainImages.data());
+}
+
+void c_vk_presentation::f_createImageViews()
+{
+    m_swapChainImageViews.resize(m_swapChainImages.size());
+    for(t_U32 i = 0; i != m_swapChainImages.size(); ++i)
+    {
+        VkImageViewCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = m_swapChainImages[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = p_base->m_swapChainImageFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+        if (vkCreateImageView(p_base->m_device, &createInfo, nullptr, &m_swapChainImageViews[i]) != VK_SUCCESS)
+        {
+        #if __CODE_START__(DEBUG_X)
+            throw std::runtime_error("<Presentation.cpp> Failed to create image views!");
+        #endif __CODE_END__(DEBUG_X)
+        }
+    }
+}
+
+void c_vk_presentation::f_destroyImageViews()
+{
+    for(auto imageView : m_swapChainImageViews)
+    {
+        vkDestroyImageView(p_base->m_device, imageView, nullptr);
+    }
 }
 
 _x_NS_END_

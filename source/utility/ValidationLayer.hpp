@@ -18,11 +18,12 @@
 #if !defined(__VALIDATION_LAYER_HPP__)
 #define __VALIDATION_LAYER_HPP__
 
-#include "../core/Macros.hpp"
-
 #define GLFW_INCLUDE_VULKAN
 #include "../../_lib_external/glfw/inc/glfw3.h"
 //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
+
+#include "../core/Macros.hpp"
+#include "../core/CoreGlobal.hpp"
 #include <vector>
 
 #if __CODE_START__(DEBUG_X)
@@ -30,8 +31,6 @@
 #endif __CODE_END__(DEBUG_X)
 
 _x_NS_START_
-
-extern const std::vector<const char *> g_validationLayers;
 
 t_Bool ValidationLayerSupport();
 
