@@ -49,9 +49,9 @@ public_fun:
         {
             p_vk->f_glfwPollEvents();
             p_vk->f_loopBody();
-
-            //todo
         }
+
+        p_vk->f_waitDeviceIdle();
     }
 
     void cleanup()

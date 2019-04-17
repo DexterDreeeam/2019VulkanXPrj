@@ -22,8 +22,10 @@
     <ClInclude Include="..\source\application\_base.hpp" />
     <ClInclude Include="..\source\core\CoreGlobal.hpp" />
     <ClInclude Include="..\source\core\GraphicsPipeline.hpp" />
+    <ClInclude Include="..\source\core\Link.hpp" />
     <ClInclude Include="..\source\core\Macros.hpp" />
     <ClInclude Include="..\source\core\Presentation.hpp" />
+    <ClInclude Include="..\source\core\Rendering.hpp" />
     <ClInclude Include="..\source\core\VkBase.hpp" />
     <ClInclude Include="..\source\core\VkInstance.hpp" />
     <ClInclude Include="..\source\math\math_x.hpp" />
@@ -32,7 +34,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\GraphicsPipeline.cpp" />
+    <ClCompile Include="..\source\core\Link.cpp" />
     <ClCompile Include="..\source\core\Presentation.cpp" />
+    <ClCompile Include="..\source\core\Rendering.cpp" />
     <ClCompile Include="..\source\core\VkInstance.cpp" />
     <ClCompile Include="..\source\utility\ValidationLayer.cpp" />
   </ItemGroup>

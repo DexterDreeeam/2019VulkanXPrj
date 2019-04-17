@@ -25,6 +25,8 @@
 #include "../core/VkBase.hpp"
 #include "../core/Presentation.hpp" 
 #include "../core/GraphicsPipeline.hpp"
+#include "../core/Rendering.hpp"
+#include "../core/Link.hpp"
 
 #include <vector>
 #include <map>
@@ -66,7 +68,7 @@ public_def:
     }c_vk_xdesc;
 
     typedef c_vk_presentation::SwapChainSupportDetails SwapChainSupportDetails;
-    typedef c_vk_presentation::QueueFamilyIndices QueueFamilyIndices;
+    typedef c_vk_base::QueueFamilyIndices QueueFamilyIndices;
 
 public_fun:
     c_vk(c_vk_xdesc * vkDesc)
@@ -74,6 +76,8 @@ public_fun:
         m_base()
        ,m_presentation(&m_base)
        ,m_pipeline(&m_base)
+       ,m_rendering(&m_base, &m_presentation, &m_pipeline)
+       ,m_link(&m_base, &m_rendering)
     {
         f_glfwInit(&(vkDesc->glfw_xdesc));
         f_createVkInstance(&(vkDesc->vkInstance_xdesc));
@@ -82,15 +86,23 @@ public_fun:
     #endif __CODE_END__(DEBUG_X)
         m_presentation.f_createSurface(m_base.m_vkInstance, m_base.m_glfwWindow);
         f_selectPhysicalDevice();
+        f_findQueueFamilies();
         f_createLogicalDevice();
         m_presentation.f_createSwapChain();
         m_presentation.f_createImageViews();
         m_pipeline.f_createRenderPass();
         m_pipeline.f_createPipelineLayout();
         m_pipeline.f_createGraphicsPipeline();
+        m_rendering.f_createFramebuffers();
+        m_rendering.f_createCommandPool();
+        m_rendering.f_createCommandBuffers();
+        m_link.f_createSemaphores();
     }
     ~c_vk()
     {
+        m_link.f_destroySemaphores();
+        m_rendering.f_destroyCommandPool();
+        m_rendering.f_destroyFramebuffers();
         m_pipeline.f_destroyGraphicsPipeline();
         m_pipeline.f_destroyPipelineLayout();
         m_pipeline.f_destroyRenderPass();
@@ -110,14 +122,16 @@ public_fun:
     void f_glfwPollEvents() { glfwPollEvents(); }
     void f_loopBody()
     {
-        //todo
+        m_link.f_drawFrame();
     }
+    void f_waitDeviceIdle() { vkDeviceWaitIdle(m_base.m_device); }
 
 private_mem:
-
     c_vk_base m_base; //vk core base struct -> Type: [c_vk_base] -> Head: <VkBase.hpp>
     c_vk_presentation m_presentation; //presentation functions -> Type: [c_vk_presentation] -> Head: <Presentation.hpp>
     c_vk_pipeline m_pipeline; //graphics pipeline functions -> Type: [c_vk_pipeline] -> Head: <GraphicsPipeline.hpp>
+    c_vk_rendering m_rendering; //rendering functions -> Type: [c_vk_rendering] -> Head: <Rendering.hpp>
+    c_vk_link m_link; //link functions -> Type: [c_vk_link] -> Head: <Link.hpp>
 
     #if __CODE_START__(DEBUG_X)
         VkDebugReportCallbackEXT m_callback; //validation layer callback handle -> Type: [VkDebugReportCallbackEXT]
@@ -150,6 +164,8 @@ private_fun:
     void f_destroyLogicalDevice(){ vkDestroyDevice(m_base.m_device, nullptr); }
 
     //---------Others---------//
+    void f_findQueueFamilies();
+
     #if __CODE_START__(DEBUG_X)
         t_Bool is_EverythingSuitable(VkPhysicalDevice device)
         {

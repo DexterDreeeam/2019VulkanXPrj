@@ -1,14 +1,2 @@
-﻿  GraphicsPipeline.cpp
-  Presentation.cpp
-  VkInstance.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(128): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(54): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(136): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(61): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(25): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(54): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(35): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(61): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
-  ValidationLayer.cpp
-  正在生成代码...
+﻿  Link.cpp
   _prj_00_core.vcxproj -> D:\xProgramGit\2019VulkanXPrj\_lib_internal\xcore.lib

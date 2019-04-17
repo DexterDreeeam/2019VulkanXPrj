@@ -41,17 +41,8 @@ class c_vk_presentation
 {
 public_def:
     friend class c_vk;
-
-    typedef struct QueueFamilyIndices
-    {
-        //::std::optional<uint32_t> graphicsFamily;
-        t_S32 graphicsFamily = -1;
-        t_S32 presentFamily = -1;
-        t_Bool isComplete()
-        {
-            return graphicsFamily >= 0 && presentFamily >= 0;
-        }
-    }QueueFamilyIndices;
+    friend class c_vk_rendering;
+    friend class c_vk_link;
 
     typedef struct SwapChainSupportDetails
     {
@@ -88,9 +79,6 @@ private_fun:
     //---------ImageView---------//
     void f_createImageViews();
     void f_destroyImageViews();
-
-    //---------Others---------//
-    QueueFamilyIndices f_findQueueFamilies();
 };
 
 _x_NS_END_

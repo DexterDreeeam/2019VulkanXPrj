@@ -39,6 +39,8 @@ class c_vk_pipeline
 {
 public_def:
     friend class c_vk;
+    friend class c_vk_rendering;
+    friend class c_vk_link;
 
 public_fun:
     c_vk_pipeline(c_vk_base * base) : p_base(base) { }
@@ -46,6 +48,7 @@ public_fun:
 
 private_mem:
     c_vk_base * p_base;
+
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;

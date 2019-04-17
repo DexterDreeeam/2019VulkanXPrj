@@ -48,6 +48,12 @@
     <ClInclude Include="..\source\core\VkBase.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\core\Rendering.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Link.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\VkInstance.cpp">
@@ -60,6 +66,12 @@
       <Filter>source\core</Filter>
     </ClCompile>
     <ClCompile Include="..\source\core\GraphicsPipeline.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Rendering.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Link.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>

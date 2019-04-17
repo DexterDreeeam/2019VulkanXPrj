@@ -32,40 +32,6 @@ void c_vk_presentation::f_destroySurface(VkInstance instance)
     vkDestroySurfaceKHR(instance, m_surface, nullptr);
 }
 
-c_vk_presentation::QueueFamilyIndices c_vk_presentation::f_findQueueFamilies()
-{
-    c_vk_presentation::QueueFamilyIndices indices;
-    t_U32 queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(p_base->m_physicalDevice, &queueFamilyCount, nullptr);
-
-    ::std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(p_base->m_physicalDevice, &queueFamilyCount, queueFamilies.data());
-
-    int i = 0;
-    for (const auto & queueFamily : queueFamilies)
-    {
-        //check if the gpu device support the queueFamily contains graphics queue
-        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-        {
-            indices.graphicsFamily = i;
-        }
-        //check if the gpu device support the queueFamily contains present queue
-        VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(p_base->m_physicalDevice, i, m_surface, &presentSupport);
-        if (queueFamily.queueCount > 0 && presentSupport)
-        {
-            indices.presentFamily = i;
-        }
-
-        if (indices.isComplete())
-        {
-            break;
-        }
-        ++i;
-    }
-    return indices;
-}
-
 c_vk_presentation::SwapChainSupportDetails c_vk_presentation::f_querySwapChainSupport()
 {
     t_U32 formatCount;
@@ -162,7 +128,7 @@ void c_vk_presentation::f_createSwapChain()
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
 
-    c_vk_presentation::QueueFamilyIndices indices = f_findQueueFamilies();
+    c_vk_base::QueueFamilyIndices indices = p_base->m_familyIndices;
     t_U32 queueFamilyIndices[] = { static_cast<t_U32>(indices.graphicsFamily), static_cast<t_U32>(indices.presentFamily) };
     VkSwapchainCreateInfoKHR createInfo = {};
     {

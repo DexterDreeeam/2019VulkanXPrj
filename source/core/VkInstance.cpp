@@ -168,7 +168,7 @@ t_U32 c_vk::f_deviceSuitabilityRate(VkPhysicalDevice device)
 #if __CODE_START__(DEBUG_X)
 t_Bool c_vk::is_deviceQueueFamilySuitable(VkPhysicalDevice device)
 {
-    QueueFamilyIndices indices = m_presentation.f_findQueueFamilies();
+    QueueFamilyIndices indices = m_base.m_familyIndices;
     return indices.isComplete();
 }
 
@@ -191,7 +191,7 @@ t_Bool c_vk::is_deviceExtensionSuitable(VkPhysicalDevice device)
 
 void c_vk::f_createLogicalDevice()
 {
-    QueueFamilyIndices indices = m_presentation.f_findQueueFamilies();
+    QueueFamilyIndices indices = m_base.m_familyIndices;
     t_F32 queuePriority = 1.0f;
     ::std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     ::std::set<t_U32> uniqueQueueFamilies = 
@@ -239,6 +239,41 @@ void c_vk::f_createLogicalDevice()
 
     vkGetDeviceQueue(m_base.m_device, indices.graphicsFamily, 0, &(m_base.m_graphicsQueue));
     vkGetDeviceQueue(m_base.m_device, indices.presentFamily, 0, &(m_base.m_presentQueue));
+}
+
+void c_vk::f_findQueueFamilies()
+{
+    c_vk_base::QueueFamilyIndices indices;
+    t_U32 queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(m_base.m_physicalDevice, &queueFamilyCount, nullptr);
+
+    ::std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_base.m_physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+    int i = 0;
+    for (const auto & queueFamily : queueFamilies)
+    {
+        //check if the gpu device support the queueFamily contains graphics queue
+        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            indices.graphicsFamily = i;
+        }
+        //check if the gpu device support the queueFamily contains present queue
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(m_base.m_physicalDevice, i, m_presentation.m_surface, &presentSupport);
+        if (queueFamily.queueCount > 0 && presentSupport)
+        {
+            indices.presentFamily = i;
+        }
+
+        if (indices.isComplete())
+        {
+            break;
+        }
+        ++i;
+    }
+
+    m_base.m_familyIndices = indices;
 }
 
 _x_NS_END_
