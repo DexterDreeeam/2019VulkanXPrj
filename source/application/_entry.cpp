@@ -13,8 +13,12 @@
  *
  */
 
-#include "../core/Macros.hpp"
+#include "../core/_Macros.hpp"
 #include "../application/HelloTriangle.hpp"
+
+#if __CODE_START__(NO_CMD)
+    #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+#endif __CODE_END__(NO_CMD)
 
 using namespace x_NS;
 

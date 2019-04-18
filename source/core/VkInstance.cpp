@@ -17,17 +17,87 @@
 
 _x_NS_START_
 
+c_vk * g_vk = nullptr;
+
 const ::std::vector<const char * > g_deviceExtensions =
 {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
+c_vk::c_vk(c_vk_xdesc * vkDesc)
+    :
+    m_base()
+   ,m_presentation(&m_base)
+   ,m_pipeline(&m_base)
+   ,m_rendering(&m_base, &m_presentation, &m_pipeline)
+   ,m_link(&m_base, &m_rendering)
+{
+    f_glfwInit(&(vkDesc->glfw_xdesc));
+    f_createVkInstance(&(vkDesc->vkInstance_xdesc));
+    #if __CODE_START__(DEBUG_X)
+        f_setupDebugCallback();
+    #endif __CODE_END__(DEBUG_X)
+    
+    m_presentation.f_createSurface(m_base.m_vkInstance, m_base.m_glfwWindow);
+    
+    f_selectPhysicalDevice();
+    f_findQueueFamilies();
+    f_createLogicalDevice();
+
+    m_presentation.f_createSwapChain();
+    m_presentation.f_createImages();
+    m_presentation.f_createImageViews();
+    
+    m_pipeline.f_createRenderPass();
+    m_pipeline.f_createPipelineLayout();
+    m_pipeline.f_createGraphicsPipeline();
+    
+    m_rendering.f_createFramebuffers();
+    m_rendering.f_createCommandPool();
+    m_rendering.f_createCommandBuffers();
+    
+    m_link.f_createSemaphores();
+    m_link.f_createFences();
+
+    g_vk = this;
+}
+
+c_vk::~c_vk()
+{
+    m_link.f_destroyFences();
+    m_link.f_destroySemaphores();
+    m_rendering.f_destroyCommandPool();
+    m_rendering.f_destroyFramebuffers();
+    m_pipeline.f_destroyGraphicsPipeline();
+    m_pipeline.f_destroyPipelineLayout();
+    m_pipeline.f_destroyRenderPass();
+    m_presentation.f_destroyImageViews();
+    m_presentation.f_destroySwapChain();
+    f_destroyLogicalDevice();
+    #if __CODE_START__(DEBUG_X)
+        ValidationDestroyDebugReportCallbackEXT(m_base.m_vkInstance, m_callback, nullptr);
+    #endif __CODE_END__(DEBUG_X)
+    m_presentation.f_destroySurface(m_base.m_vkInstance);
+    f_destroyVkInstance();
+    f_glfwDestroy();
+}
+
 void c_vk::f_glfwInit(class c_vk_xdesc::glfw_xdesc * glfw_xdesc)
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    m_base.m_glfwWindow = glfwCreateWindow(glfw_xdesc->width, glfw_xdesc->height, glfw_xdesc->title, nullptr, nullptr);
+
+    #if __CODE_START__(WINDOW_RESIZE)
+        m_base.m_glfwWindow = glfwCreateWindow(glfw_xdesc->width, glfw_xdesc->height, glfw_xdesc->title, nullptr, nullptr);
+        glfwSetFramebufferSizeCallback(m_base.m_glfwWindow, g_windowResizeCallback);
+    #else
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        m_base.m_glfwWindow = glfwCreateWindow(glfw_xdesc->width, glfw_xdesc->height, glfw_xdesc->title, nullptr, nullptr);
+        glfwSetWindowPos(m_base.m_glfwWindow, (mode->width - glfw_xdesc->width) / 2, (mode->height - glfw_xdesc->height) / 2);
+    #endif __CODE_END__(WINDOW_RESIZE)
+
     m_base.m_swapChainExtent.width = glfw_xdesc->width;
     m_base.m_swapChainExtent.height = glfw_xdesc->height;
 }

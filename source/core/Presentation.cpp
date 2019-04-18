@@ -102,11 +102,17 @@ VkExtent2D c_vk_presentation::f_chooseSwapExtent(const VkSurfaceCapabilitiesKHR 
     }
     else 
     {
-        VkExtent2D actualExtent = { p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height };
-        {
+        #if __CODE_START__(WINDOW_RESIZE)
+            t_S32 width, height;
+            glfwGetFramebufferSize(p_base->m_glfwWindow, &width, &height);
+            p_base->m_swapChainExtent.width = width;
+            p_base->m_swapChainExtent.height = height;
+            VkExtent2D actualExtent = { static_cast<t_U32>(width), static_cast<t_U32>(height) };
+        #else
+            VkExtent2D actualExtent = { p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height };
+        #endif __CODE_START__(WINDOW_RESIZE)
             actualExtent.width = ::std::max(capabilities.minImageExtent.width, ::std::min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = ::std::max(capabilities.minImageExtent.height, ::std::min(capabilities.maxImageExtent.height, actualExtent.height));
-        }
         return actualExtent;
     }
 }
@@ -167,7 +173,11 @@ void c_vk_presentation::f_createSwapChain()
 
     p_base->m_swapChainImageFormat = surfaceFormat.format;
     p_base->m_swapChainExtent = extent;
+}
 
+void c_vk_presentation::f_createImages()
+{
+    t_U32 imageCount;
     vkGetSwapchainImagesKHR(p_base->m_device, m_swapChain, &imageCount, nullptr);
     m_swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(p_base->m_device, m_swapChain, &imageCount, m_swapChainImages.data());

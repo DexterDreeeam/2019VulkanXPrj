@@ -20,7 +20,7 @@
 #include "../../_lib_external/glfw/inc/glfw3.h"
 //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
 
-#include "../core/Macros.hpp"
+#include "../core/_Macros.hpp"
 #include "../core/CoreGlobal.hpp"
 #include "../core/VkBase.hpp"
 
@@ -76,7 +76,8 @@ private_fun:
     void f_createSwapChain();
     void f_destroySwapChain(){ vkDestroySwapchainKHR(p_base->m_device, m_swapChain, nullptr); }
 
-    //---------ImageView---------//
+    //--------- SwapChainImage & SwapChainImageView ---------//
+    void f_createImages();
     void f_createImageViews();
     void f_destroyImageViews();
 };

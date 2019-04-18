@@ -18,7 +18,6 @@
 
  //---------------------------
 
-//#include "../core/Macros.hpp"
 #include "../application/_base.hpp"
 
 _x_NS_START_

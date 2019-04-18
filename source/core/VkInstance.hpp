@@ -20,7 +20,7 @@
 #include "../../_lib_external/glfw/inc/glfw3.h"
 //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
 
-#include "../core/Macros.hpp"
+#include "../core/_Macros.hpp"
 #include "../core/CoreGlobal.hpp"
 #include "../core/VkBase.hpp"
 #include "../core/Presentation.hpp" 
@@ -45,6 +45,10 @@
 //------------------------------------
 
 _x_NS_START_
+
+class c_vk;
+
+extern c_vk * g_vk;
 
 class c_vk
 {
@@ -71,51 +75,8 @@ public_def:
     typedef c_vk_base::QueueFamilyIndices QueueFamilyIndices;
 
 public_fun:
-    c_vk(c_vk_xdesc * vkDesc)
-        : 
-        m_base()
-       ,m_presentation(&m_base)
-       ,m_pipeline(&m_base)
-       ,m_rendering(&m_base, &m_presentation, &m_pipeline)
-       ,m_link(&m_base, &m_rendering)
-    {
-        f_glfwInit(&(vkDesc->glfw_xdesc));
-        f_createVkInstance(&(vkDesc->vkInstance_xdesc));
-    #if __CODE_START__(DEBUG_X)
-        f_setupDebugCallback();
-    #endif __CODE_END__(DEBUG_X)
-        m_presentation.f_createSurface(m_base.m_vkInstance, m_base.m_glfwWindow);
-        f_selectPhysicalDevice();
-        f_findQueueFamilies();
-        f_createLogicalDevice();
-        m_presentation.f_createSwapChain();
-        m_presentation.f_createImageViews();
-        m_pipeline.f_createRenderPass();
-        m_pipeline.f_createPipelineLayout();
-        m_pipeline.f_createGraphicsPipeline();
-        m_rendering.f_createFramebuffers();
-        m_rendering.f_createCommandPool();
-        m_rendering.f_createCommandBuffers();
-        m_link.f_createSemaphores();
-    }
-    ~c_vk()
-    {
-        m_link.f_destroySemaphores();
-        m_rendering.f_destroyCommandPool();
-        m_rendering.f_destroyFramebuffers();
-        m_pipeline.f_destroyGraphicsPipeline();
-        m_pipeline.f_destroyPipelineLayout();
-        m_pipeline.f_destroyRenderPass();
-        m_presentation.f_destroyImageViews();
-        m_presentation.f_destroySwapChain();
-        f_destroyLogicalDevice();
-    #if __CODE_START__(DEBUG_X)
-        ValidationDestroyDebugReportCallbackEXT(m_base.m_vkInstance, m_callback, nullptr);
-    #endif __CODE_END__(DEBUG_X)
-        m_presentation.f_destroySurface(m_base.m_vkInstance);
-        f_destroyVkInstance();
-        f_glfwDestroy();
-    }
+    c_vk(c_vk_xdesc * vkDesc); //initial vk
+    ~c_vk(); //clean vk
 
     //---------Framework---------//
     t_Bool is_glfwShouldNotClose() { return !glfwWindowShouldClose(m_base.m_glfwWindow); }
@@ -165,6 +126,13 @@ private_fun:
 
     //---------Others---------//
     void f_findQueueFamilies();
+
+    #if __CODE_START__(WINDOW_RESIZE)
+        static void g_windowResizeCallback(GLFWwindow * window, t_S32 width, t_S32 height)
+        {
+            g_vk->m_link.is_needWindowResize = true;
+        }
+    #endif __CODE_START__(WINDOW_RESIZE)
 
     #if __CODE_START__(DEBUG_X)
         t_Bool is_EverythingSuitable(VkPhysicalDevice device)
