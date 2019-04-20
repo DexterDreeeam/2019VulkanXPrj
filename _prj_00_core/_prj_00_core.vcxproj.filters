@@ -16,6 +16,9 @@
     <Filter Include="source\utility">
       <UniqueIdentifier>{6f02c387-3a40-494e-bcc7-f5302edfa24b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\core\data">
+      <UniqueIdentifier>{9f326770-d6ec-428a-a593-35d6a0148c96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\math\math_x.hpp">
@@ -54,6 +57,15 @@
     <ClInclude Include="..\source\core\_Macros.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\core\data\Vertex.hpp">
+      <Filter>source\core\data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\data\Data.hpp">
+      <Filter>source\core\data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\EventMgr.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\VkInstance.cpp">
@@ -72,6 +84,12 @@
       <Filter>source\core</Filter>
     </ClCompile>
     <ClCompile Include="..\source\core\Link.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\data\Data.cpp">
+      <Filter>source\core\data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\EventMgr.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>

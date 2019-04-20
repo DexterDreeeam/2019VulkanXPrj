@@ -16,16 +16,6 @@
 #if !defined(__VK_INSTANCE_HPP__)
 #define __VK_INSTANCE_HPP__
 
-#define GLFW_INCLUDE_VULKAN
-#include "../../_lib_external/glfw/inc/glfw3.h"
-//#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
-
-#include "../core/_Macros.hpp"
-#include "../core/CoreGlobal.hpp"
-#include "../core/VkBase.hpp"
-#include "../core/Presentation.hpp" 
-#include "../core/GraphicsPipeline.hpp"
-#include "../core/Rendering.hpp"
 #include "../core/Link.hpp"
 
 #include <vector>
@@ -53,7 +43,7 @@ extern c_vk * g_vk;
 class c_vk
 {
 public_def:
-    friend class c_vk_presentation;
+    friend class c_eventMgr;
 
     typedef struct c_vk_xdesc
     {
@@ -75,7 +65,14 @@ public_def:
     typedef c_vk_base::QueueFamilyIndices QueueFamilyIndices;
 
 public_fun:
-    c_vk(c_vk_xdesc * vkDesc); //initial vk
+    c_vk()
+        :
+        m_base() // vk base handle
+        , m_data(&m_base) // app data
+        , m_rendering(&m_base, &m_data)
+        , m_link(&m_base, &m_rendering) 
+    { }
+    void f_setupVk(c_vk_xdesc * vkDesc); //initial vk
     ~c_vk(); //clean vk
 
     //---------Framework---------//
@@ -89,10 +86,9 @@ public_fun:
 
 private_mem:
     c_vk_base m_base; //vk core base struct -> Type: [c_vk_base] -> Head: <VkBase.hpp>
-    c_vk_presentation m_presentation; //presentation functions -> Type: [c_vk_presentation] -> Head: <Presentation.hpp>
-    c_vk_pipeline m_pipeline; //graphics pipeline functions -> Type: [c_vk_pipeline] -> Head: <GraphicsPipeline.hpp>
     c_vk_rendering m_rendering; //rendering functions -> Type: [c_vk_rendering] -> Head: <Rendering.hpp>
     c_vk_link m_link; //link functions -> Type: [c_vk_link] -> Head: <Link.hpp>
+    c_vk_data m_data; //data functions -> Type: [c_vk_data] -> Head: <_appData.hpp>
 
     #if __CODE_START__(DEBUG_X)
         VkDebugReportCallbackEXT m_callback; //validation layer callback handle -> Type: [VkDebugReportCallbackEXT]
@@ -137,7 +133,7 @@ private_fun:
     #if __CODE_START__(DEBUG_X)
         t_Bool is_EverythingSuitable(VkPhysicalDevice device)
         {
-            SwapChainSupportDetails details = m_presentation.f_querySwapChainSupport();
+            SwapChainSupportDetails details = m_rendering.m_presentation.f_querySwapChainSupport();
             return 
                 is_deviceExtensionSuitable(m_base.m_physicalDevice) &&
                 is_deviceQueueFamilySuitable(m_base.m_physicalDevice) &&

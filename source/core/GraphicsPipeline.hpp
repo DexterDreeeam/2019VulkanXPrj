@@ -16,12 +16,8 @@
 #if !defined(__GRAPHICS_PIPELINE_HPP__)
 #define __GRAPHICS_PIPELINE_HPP__
 
-#define GLFW_INCLUDE_VULKAN
-#include "../../_lib_external/glfw/inc/glfw3.h"
- //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
-
-#include "../core/_Macros.hpp"
 #include "../core/VkBase.hpp"
+#include "../core/data/Data.hpp"
 
 #include <vector>
 #include <string>
@@ -43,11 +39,12 @@ public_def:
     friend class c_vk_link;
 
 public_fun:
-    c_vk_pipeline(c_vk_base * base) : p_base(base) { }
+    c_vk_pipeline(c_vk_base * base, c_vk_data * data) : p_base(base), p_data(data) { }
     ~c_vk_pipeline() { }
 
 private_mem:
     c_vk_base * p_base;
+    c_vk_data * p_data;
 
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;

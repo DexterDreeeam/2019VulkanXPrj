@@ -16,13 +16,8 @@
 #if !defined(__PRESENTATION_HPP__)
 #define __PRESENTATION_HPP__
 
-#define GLFW_INCLUDE_VULKAN
-#include "../../_lib_external/glfw/inc/glfw3.h"
-//#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
-
-#include "../core/_Macros.hpp"
-#include "../core/CoreGlobal.hpp"
 #include "../core/VkBase.hpp"
+#include "../core/data/Data.hpp"
 
 #include <vector>
 #include <algorithm>

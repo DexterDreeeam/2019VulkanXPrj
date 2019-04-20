@@ -25,7 +25,10 @@
 
 _x_NS_START_
 
-typedef glm::mat4 t_Vec4;
+typedef glm::vec2 t_Vec2;
+typedef glm::vec3 t_Vec3;
+typedef glm::vec4 t_Vec4;
+
 typedef glm::mat4 t_Mat4;
 
 _x_NS_END_

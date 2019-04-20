@@ -58,7 +58,7 @@ void c_vk_pipeline::f_createRenderPass()
     if (vkCreateRenderPass(p_base->m_device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) 
     {
     #if __CODE_START__(DEBUG_X)
-        throw ::std::runtime_error("failed to create render pass!");
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create render pass!");
     #endif __CODE_END__(DEBUG_X)
     }
 }
@@ -75,7 +75,7 @@ void c_vk_pipeline::f_createPipelineLayout()
     if (vkCreatePipelineLayout(p_base->m_device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
-        throw ::std::runtime_error("failed to create pipeline layout!");
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create pipeline layout!");
     #endif __CODE_END__(DEBUG_X)
     }
 }
@@ -100,8 +100,8 @@ VkShaderModule c_vk_pipeline::f_createShaderModule(const ::std::vector<char> & c
 
 void c_vk_pipeline::f_createGraphicsPipeline()
 {
-    ::std::vector<char> vertShaderCode = readFile("../shader_spv/_prj_p01_test_vert.spv");
-    ::std::vector<char> fragShaderCode = readFile("../shader_spv/_prj_p01_test_frag.spv");
+    ::std::vector<char> vertShaderCode = readFile(p_base->m_vertPath);
+    ::std::vector<char> fragShaderCode = readFile(p_base->m_fragPath);
     VkShaderModule vertShaderModule = f_createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = f_createShaderModule(fragShaderCode);
 
@@ -117,12 +117,14 @@ void c_vk_pipeline::f_createGraphicsPipeline()
         fragShaderStageInfo.pName = "main";
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+    VkVertexInputBindingDescription bindingDescription = t_Vertex::getBindingDescription();
+    auto attributeDescription = t_Vertex::getAttributeDescriptions();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<t_U32>(attributeDescription.size());
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -174,12 +176,12 @@ void c_vk_pipeline::f_createGraphicsPipeline()
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_FALSE;
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
         colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
         //colorBlendAttachment.blendEnable = VK_TRUE;
         //colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         //colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -226,7 +228,7 @@ void c_vk_pipeline::f_createGraphicsPipeline()
     if (vkCreateGraphicsPipelines(p_base->m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
-        throw ::std::runtime_error("failed to create graphics pipeline!");
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create graphics pipeline!");
     #endif __CODE_END__(DEBUG_X)
     }
 

@@ -6,12 +6,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\application\HelloTriangle.hpp">
+    <ClInclude Include="..\source\application\_prj_01_test.hpp">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\application\_entry.cpp">
+    <ClCompile Include="..\source\application\_prj_01_test.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

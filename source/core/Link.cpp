@@ -61,7 +61,7 @@ void c_vk_link::f_drawFrame()
     VkResult rst;
     rst = vkAcquireNextImageKHR(
         p_base->m_device, 
-        p_rendering->p_presentation->m_swapChain, 
+        p_rendering->m_presentation.m_swapChain, 
         ::std::numeric_limits<uint64_t>::max(), 
         m_imageAvailableSemaphores[currentFrame], 
         VK_NULL_HANDLE, 
@@ -112,7 +112,7 @@ void c_vk_link::f_drawFrame()
     /*
         Wait 'm_renderFinishedSemaphores[currentFrame]' semaphore signal
     */
-    VkSwapchainKHR swapChains[] = { p_rendering->p_presentation->m_swapChain };
+    VkSwapchainKHR swapChains[] = { p_rendering->m_presentation.m_swapChain };
     VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
@@ -189,12 +189,12 @@ void c_vk_link::f_reconstruct_onWindowResize()
 
     f_cleanup_onWindowResize();
 
-    p_rendering->p_presentation->f_createSwapChain();
-    p_rendering->p_presentation->f_createImages();
-    p_rendering->p_presentation->f_createImageViews();
+    p_rendering->m_presentation.f_createSwapChain();
+    p_rendering->m_presentation.f_createImages();
+    p_rendering->m_presentation.f_createImageViews();
 
-    p_rendering->p_pipeline->f_createRenderPass();
-    p_rendering->p_pipeline->f_createGraphicsPipeline();
+    p_rendering->m_pipeline.f_createRenderPass();
+    p_rendering->m_pipeline.f_createGraphicsPipeline();
     
     p_rendering->f_createFramebuffers();
     p_rendering->f_createCommandBuffers();
@@ -205,11 +205,11 @@ void c_vk_link::f_cleanup_onWindowResize()
     p_rendering->f_destroyFramebuffers();
     p_rendering->f_reconstructCommandBuffers();
     
-    p_rendering->p_pipeline->f_destroyGraphicsPipeline();
-    p_rendering->p_pipeline->f_destroyRenderPass();
+    p_rendering->m_pipeline.f_destroyGraphicsPipeline();
+    p_rendering->m_pipeline.f_destroyRenderPass();
 
-    p_rendering->p_presentation->f_destroyImageViews();
-    p_rendering->p_presentation->f_destroySwapChain();
+    p_rendering->m_presentation.f_destroyImageViews();
+    p_rendering->m_presentation.f_destroySwapChain();
 }
 #endif __CODE_END__(WINDOW_RESIZE)
 

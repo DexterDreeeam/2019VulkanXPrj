@@ -24,13 +24,7 @@ const ::std::vector<const char * > g_deviceExtensions =
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-c_vk::c_vk(c_vk_xdesc * vkDesc)
-    :
-    m_base()
-   ,m_presentation(&m_base)
-   ,m_pipeline(&m_base)
-   ,m_rendering(&m_base, &m_presentation, &m_pipeline)
-   ,m_link(&m_base, &m_rendering)
+void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
 {
     f_glfwInit(&(vkDesc->glfw_xdesc));
     f_createVkInstance(&(vkDesc->vkInstance_xdesc));
@@ -38,19 +32,21 @@ c_vk::c_vk(c_vk_xdesc * vkDesc)
         f_setupDebugCallback();
     #endif __CODE_END__(DEBUG_X)
     
-    m_presentation.f_createSurface(m_base.m_vkInstance, m_base.m_glfwWindow);
+    m_rendering.m_presentation.f_createSurface(m_base.m_vkInstance, m_base.m_glfwWindow);
     
     f_selectPhysicalDevice();
     f_findQueueFamilies();
     f_createLogicalDevice();
 
-    m_presentation.f_createSwapChain();
-    m_presentation.f_createImages();
-    m_presentation.f_createImageViews();
+    m_rendering.m_presentation.f_createSwapChain();
+    m_rendering.m_presentation.f_createImages();
+    m_rendering.m_presentation.f_createImageViews();
     
-    m_pipeline.f_createRenderPass();
-    m_pipeline.f_createPipelineLayout();
-    m_pipeline.f_createGraphicsPipeline();
+    m_data.f_createVertexBuffer();
+
+    m_rendering.m_pipeline.f_createRenderPass();
+    m_rendering.m_pipeline.f_createPipelineLayout();
+    m_rendering.m_pipeline.f_createGraphicsPipeline();
     
     m_rendering.f_createFramebuffers();
     m_rendering.f_createCommandPool();
@@ -66,18 +62,26 @@ c_vk::~c_vk()
 {
     m_link.f_destroyFences();
     m_link.f_destroySemaphores();
+
     m_rendering.f_destroyCommandPool();
     m_rendering.f_destroyFramebuffers();
-    m_pipeline.f_destroyGraphicsPipeline();
-    m_pipeline.f_destroyPipelineLayout();
-    m_pipeline.f_destroyRenderPass();
-    m_presentation.f_destroyImageViews();
-    m_presentation.f_destroySwapChain();
+    
+    m_rendering.m_pipeline.f_destroyGraphicsPipeline();
+    m_rendering.m_pipeline.f_destroyPipelineLayout();
+    m_rendering.m_pipeline.f_destroyRenderPass();
+
+    m_data.f_destroyVertexBuffer();
+    
+    m_rendering.m_presentation.f_destroyImageViews();
+    m_rendering.m_presentation.f_destroySwapChain();
+    
     f_destroyLogicalDevice();
     #if __CODE_START__(DEBUG_X)
         ValidationDestroyDebugReportCallbackEXT(m_base.m_vkInstance, m_callback, nullptr);
     #endif __CODE_END__(DEBUG_X)
-    m_presentation.f_destroySurface(m_base.m_vkInstance);
+    
+    m_rendering.m_presentation.f_destroySurface(m_base.m_vkInstance);
+    
     f_destroyVkInstance();
     f_glfwDestroy();
 }
@@ -330,7 +334,7 @@ void c_vk::f_findQueueFamilies()
         }
         //check if the gpu device support the queueFamily contains present queue
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(m_base.m_physicalDevice, i, m_presentation.m_surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(m_base.m_physicalDevice, i, m_rendering.m_presentation.m_surface, &presentSupport);
         if (queueFamily.queueCount > 0 && presentSupport)
         {
             indices.presentFamily = i;

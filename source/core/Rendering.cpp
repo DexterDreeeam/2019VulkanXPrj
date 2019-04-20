@@ -19,15 +19,15 @@ _x_NS_START_
 
 void c_vk_rendering::f_createFramebuffers()
 {
-    m_swapChainFramebuffers.resize(p_presentation->m_swapChainImageViews.size());
+    m_swapChainFramebuffers.resize(m_presentation.m_swapChainImageViews.size());
 
-    for (t_U32 i = 0; i != p_presentation->m_swapChainImageViews.size(); ++i)
+    for (t_U32 i = 0; i != m_presentation.m_swapChainImageViews.size(); ++i)
     {
-        VkImageView attachments[] = { p_presentation->m_swapChainImageViews[i] };
+        VkImageView attachments[] = { m_presentation.m_swapChainImageViews[i] };
 
         VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = p_pipeline->m_renderPass;
+            framebufferInfo.renderPass = m_pipeline.m_renderPass;
             framebufferInfo.attachmentCount = 1;
             framebufferInfo.pAttachments = attachments;
             framebufferInfo.width = p_base->m_swapChainExtent.width;
@@ -92,7 +92,7 @@ void c_vk_rendering::f_createCommandBuffers()
         VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
         VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = p_pipeline->m_renderPass;
+            renderPassInfo.renderPass = m_pipeline.m_renderPass;
             renderPassInfo.framebuffer = m_swapChainFramebuffers[i];
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = p_base->m_swapChainExtent;
@@ -100,8 +100,11 @@ void c_vk_rendering::f_createCommandBuffers()
             renderPassInfo.pClearValues = &clearColor;
         
         vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, p_pipeline->m_graphicsPipeline);
-        vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+        vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.m_graphicsPipeline);
+            
+            vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, p_data->m_vertexBuffers.data(), p_data->m_vertexBufferOffsets.data());
+            vkCmdDraw(m_commandBuffers[i], p_data->m_vertexCounts[0], 1, 0, 0);
+        
         vkCmdEndRenderPass(m_commandBuffers[i]);
         
         if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS) 

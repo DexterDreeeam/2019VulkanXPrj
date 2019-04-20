@@ -18,8 +18,8 @@
 
 //---------------------------
 
-#include "../core/_Macros.hpp"
 #include "../core/VkInstance.hpp"
+#include "../core/EventMgr.hpp"
 
 _x_NS_START_
 
@@ -29,6 +29,13 @@ public_fun:
     app()
     { }
 
+    void initApp(const char * vertPath, const char * fragPath)
+    {
+        m_mgr.f_setVk(&m_vk);
+        m_mgr.f_setVertShader(vertPath);
+        m_mgr.f_setFragShader(fragPath);
+    }
+
     void initVulkan(t_U32 width, t_U32 height, const char * title)
     {
         c_vk::c_vk_xdesc vkDesc = {};
@@ -37,30 +44,28 @@ public_fun:
         vkDesc.glfw_xdesc.title = title;
         vkDesc.vkInstance_xdesc.applicationName = __XVK_APPLICATION_NAME__;
         vkDesc.vkInstance_xdesc.engineName = __XVK_ENGINE_NAME__;
-        p_vk = new c_vk(&vkDesc);
+        m_vk.f_setupVk(&vkDesc);
     }
 
-    void initApp()
-    { }
 
     void mainLoop()
     {
-        while (p_vk->is_glfwShouldNotClose())
+        while (m_vk.is_glfwShouldNotClose())
         {
-            p_vk->f_glfwPollEvents();
-            p_vk->f_loopBody();
+            m_vk.f_glfwPollEvents();
+            m_vk.f_loopBody();
         }
 
-        p_vk->f_waitDeviceIdle();
+        m_vk.f_waitDeviceIdle();
     }
 
     void cleanup()
     {
-        delete p_vk;
     }
 
 private_mem:
-    c_vk * p_vk;
+    c_vk m_vk;
+    c_eventMgr m_mgr;
 
 private_fun:
 

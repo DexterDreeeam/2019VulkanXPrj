@@ -21,6 +21,7 @@
  //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
 
 #include "../core/_Macros.hpp"
+#include "../core/CoreGlobal.hpp"
 
 _x_NS_START_
 
@@ -32,6 +33,8 @@ public_def:
     friend class c_vk_pipeline;
     friend class c_vk_rendering;
     friend class c_vk_link;
+    friend class c_vk_data;
+    friend class c_eventMgr;
 
     typedef struct
     {
@@ -55,6 +58,9 @@ private_mem:
 
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
+
+    const char * m_vertPath;
+    const char * m_fragPath;
 };
 
 _x_NS_END_

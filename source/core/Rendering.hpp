@@ -16,13 +16,6 @@
 #if !defined(__RENDERING_HPP__)
 #define __RENDERING_HPP__
 
-#define GLFW_INCLUDE_VULKAN
-#include "../../_lib_external/glfw/inc/glfw3.h"
- //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
-
-#include "../core/_Macros.hpp"
-#include "../core/CoreGlobal.hpp"
-#include "../core/VkBase.hpp"
 #include "../core/Presentation.hpp"
 #include "../core/GraphicsPipeline.hpp"
 
@@ -38,20 +31,20 @@ public_def:
     friend class c_vk_link;
 
 public_fun:
-    c_vk_rendering(c_vk_base * base, c_vk_presentation * presentation, c_vk_pipeline * pipeline)
+    c_vk_rendering(c_vk_base * base, c_vk_data * data)
         :
         p_base(base)
-       ,p_presentation(presentation)
-       ,p_pipeline(pipeline)
-    {
-    
-    }
+       ,p_data(data)
+       ,m_pipeline(base, data)
+       ,m_presentation(base)
+    { }
     ~c_vk_rendering() { }
 
 private_mem:
     c_vk_base * p_base;
-    c_vk_presentation * p_presentation;
-    c_vk_pipeline * p_pipeline;
+    c_vk_data * p_data;
+    c_vk_presentation m_presentation; //presentation functions -> Type: [c_vk_presentation] -> Head: <Presentation.hpp>
+    c_vk_pipeline m_pipeline; //graphics pipeline functions -> Type: [c_vk_pipeline] -> Head: <GraphicsPipeline.hpp>
 
     ::std::vector<VkFramebuffer> m_swapChainFramebuffers;
     VkCommandPool m_commandPool;

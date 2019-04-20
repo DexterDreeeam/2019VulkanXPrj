@@ -16,16 +16,7 @@
 #if !defined(__LINK_HPP__)
 #define __LINK_HPP__
 
-#define GLFW_INCLUDE_VULKAN
-#include "../../_lib_external/glfw/inc/glfw3.h"
- //#include "../../_lib_external/LunargVulkan_1_1_92_1/inc/vulkan/vulkan.h"
-
-#include "../core/_Macros.hpp"
-#include "../core/CoreGlobal.hpp"
-#include "../core/VkBase.hpp"
 #include "../core/Rendering.hpp"
-
-#include <vector>
 
 _x_NS_START_
 
@@ -46,8 +37,13 @@ public_fun:
     }
     ~c_vk_link() { }
 
+    //const ::std::vector<VkBuffer> & f_getVertexBuffers() const { return p_data->m_vertexBuffers; }
+    //const ::std::vector<t_U64> & f_getVertexBuffersOffsets() const { return p_data->m_vertexBufferOffsets; }
+    //const ::std::vector<VkDeviceMemory> & f_getVertexBufferMemorys() const { return p_data->m_vertexBufferMemorys; }
+
 private_mem:
     c_vk_base * p_base;
+    c_vk_data * p_data;
     c_vk_rendering * p_rendering;
 
     /*

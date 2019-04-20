@@ -126,10 +126,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\application\HelloTriangle.hpp" />
+    <ClInclude Include="..\source\application\_prj_01_test.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\application\_entry.cpp" />
+    <ClCompile Include="..\source\application\_prj_01_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

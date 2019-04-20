@@ -28,21 +28,26 @@
 
 //------------------------------------
 
-#define DEBUG_MODE_X  //<<<<<<<<--------- Debug Define
-//#define VALIDATION_MODE_X
-
 #define __XVK_ENABLE__ 1
 #define __XVK_DISABLE__ 0
+
+//------------------------------------
 
 #define __XVK_VERSION__  VK_MAKE_VERSION(1, 1, 0)
 #define __XVK_API_VERSION__  VK_API_VERSION_1_1
 #define __XVK_APPLICATION_NAME__ "VkApp"
 #define __XVK_ENGINE_NAME__  "xEngine"
 
+//------------------------------------
+
 #define __XVK_MAX_FRAMES_IN_FLIGHT__  2U //framesMax in GPU graphics/present queue
 
+//------------------------------------
+
 #define __XVK_WINDOW_RESIZE__  __XVK_ENABLE__ //whether enable windowResize
-#define __XVK_WINDOW_CMD__  __XVK_DISABLE__ 
+#define __XVK_WINDOW_CMD__  __XVK_ENABLE__ 
+#define DEBUG_MODE_X  //<<<<<<<<--------- Debug Define
+#define PROJECT_NUMBER 1
 
 //------------------------------------
 
