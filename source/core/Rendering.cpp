@@ -51,7 +51,7 @@ void c_vk_rendering::f_createCommandPool()
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
         poolInfo.flags = 0; // Optional
 
-    if (vkCreateCommandPool(p_base->m_device, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    if (vkCreateCommandPool(p_base->m_device, &poolInfo, nullptr, &(p_base->m_commandPool)) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
         throw ::std::runtime_error("<Rendering.cpp> Failed to create command pool!");
@@ -65,7 +65,7 @@ void c_vk_rendering::f_createCommandBuffers()
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = m_commandPool;
+    allocInfo.commandPool = p_base->m_commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (t_U32)m_commandBuffers.size();
 
@@ -102,8 +102,27 @@ void c_vk_rendering::f_createCommandBuffers()
         vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.m_graphicsPipeline);
             
-            vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, p_data->m_vertexBuffers.data(), p_data->m_vertexBufferOffsets.data());
-            vkCmdDraw(m_commandBuffers[i], p_data->m_vertexCounts[0], 1, 0, 0);
+            vkCmdBindVertexBuffers(
+                m_commandBuffers[i], 
+                0, 
+                p_data->m_vertexBuffers.size(), 
+                p_data->m_vertexBuffers.data(), 
+                p_data->m_vertexBufferOffsets.data()
+            );
+            vkCmdBindIndexBuffer(
+                m_commandBuffers[i], 
+                p_data->m_indexBuffers[0],
+                p_data->m_indexBufferOffsets[0],
+                VK_INDEX_TYPE_UINT16//VK_INDEX_TYPE_UINT16
+            );
+            vkCmdDrawIndexed( //vkCmdDraw
+                m_commandBuffers[i], 
+                p_data->m_pointNumbers[0],
+                1, 
+                0, 
+                0,
+                0
+            );
         
         vkCmdEndRenderPass(m_commandBuffers[i]);
         

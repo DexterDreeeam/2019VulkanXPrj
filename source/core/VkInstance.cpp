@@ -42,16 +42,18 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_rendering.m_presentation.f_createImages();
     m_rendering.m_presentation.f_createImageViews();
     
-    m_data.f_createVertexBuffer();
-
     m_rendering.m_pipeline.f_createRenderPass();
     m_rendering.m_pipeline.f_createPipelineLayout();
     m_rendering.m_pipeline.f_createGraphicsPipeline();
     
     m_rendering.f_createFramebuffers();
     m_rendering.f_createCommandPool();
+
+    m_data.f_createVertexBuffer();
+    m_data.f_createIndexBuffer();
+
     m_rendering.f_createCommandBuffers();
-    
+
     m_link.f_createSemaphores();
     m_link.f_createFences();
 

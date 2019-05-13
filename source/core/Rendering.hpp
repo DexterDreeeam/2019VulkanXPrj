@@ -47,7 +47,6 @@ private_mem:
     c_vk_pipeline m_pipeline; //graphics pipeline functions -> Type: [c_vk_pipeline] -> Head: <GraphicsPipeline.hpp>
 
     ::std::vector<VkFramebuffer> m_swapChainFramebuffers;
-    VkCommandPool m_commandPool;
     ::std::vector<VkCommandBuffer> m_commandBuffers;
 
 private_fun:
@@ -66,7 +65,7 @@ private_fun:
 
     void f_destroyCommandPool()
     {
-        vkDestroyCommandPool(p_base->m_device, m_commandPool, nullptr);
+        vkDestroyCommandPool(p_base->m_device, p_base->m_commandPool, nullptr);
     }
 
     //---------command buffers---------//
@@ -74,7 +73,7 @@ private_fun:
     #if __CODE_START__(WINDOW_RESIZE)
         void f_reconstructCommandBuffers()
         {
-            vkFreeCommandBuffers(p_base->m_device, m_commandPool, static_cast<t_U32>(m_commandBuffers.size()), m_commandBuffers.data());
+            vkFreeCommandBuffers(p_base->m_device, p_base->m_commandPool, static_cast<t_U32>(m_commandBuffers.size()), m_commandBuffers.data());
         }
     #endif __CODE_END__(WINDOW_RESIZE)
 

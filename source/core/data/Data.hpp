@@ -23,7 +23,8 @@
 
 _x_NS_START_
 
-extern const ::std::vector<t_Vertex> vertices;
+extern const ::std::vector<::std::vector<t_Vertex>> vertices;
+extern const ::std::vector<::std::vector<t_U16>> indices;
 
 class c_vk_data
 {
@@ -34,7 +35,7 @@ public_def:
     friend class c_vk_link;
 
 public_fun:
-    c_vk_data(c_vk_base * base) : p_base(base) { }
+    c_vk_data(c_vk_base * base) : p_base(base) { }//for(auto & v : vertices) { m_vertexCounts.push_back(v.size()); } }
     ~c_vk_data() { }
 
 private_mem:
@@ -43,7 +44,12 @@ private_mem:
     ::std::vector<VkBuffer> m_vertexBuffers;
     ::std::vector<VkDeviceMemory> m_vertexBufferMemorys;
     ::std::vector<VkDeviceSize> m_vertexBufferOffsets;
-    ::std::vector<t_U32> m_vertexCounts;
+
+    ::std::vector<VkBuffer> m_indexBuffers;
+    ::std::vector<VkDeviceMemory> m_indexBufferMemorys;
+    ::std::vector<VkDeviceSize> m_indexBufferOffsets;
+
+    ::std::vector<t_U32> m_pointNumbers;
 
 private_fun:
     //--------- vertex buffer ---------//
@@ -57,6 +63,20 @@ private_fun:
         }
     }
 
+    //--------- index buffer ---------//
+    void f_createIndexBuffer();
+    void f_destroyIndexBuffer()
+    {
+        for (t_U32 i = 0; i != m_indexBuffers.size(); ++i)
+        {
+            vkFreeMemory(p_base->m_device, m_indexBufferMemorys[i], nullptr);
+            vkDestroyBuffer(p_base->m_device, m_indexBuffers[i], nullptr);
+        }
+    }
+
+    //--------- general buffer ---------//
+    void f_createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer & buffer, VkDeviceMemory & bufferMemory);
+    void f_copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 };
 
 _x_NS_END_

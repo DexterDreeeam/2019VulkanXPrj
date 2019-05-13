@@ -55,6 +55,7 @@ private_mem:
     QueueFamilyIndices m_familyIndices;
     VkQueue m_graphicsQueue; //graphics queue in device -> Type: [VkQueue]
     VkQueue m_presentQueue; //present queue in device -> Type: [VkQueue]
+    VkCommandPool m_commandPool;
 
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
