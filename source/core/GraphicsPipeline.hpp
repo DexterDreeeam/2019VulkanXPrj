@@ -47,6 +47,9 @@ private_mem:
     c_vk_data * p_data;
 
     VkRenderPass m_renderPass;
+    VkDescriptorSetLayout m_descriptorSetLayout;
+    VkDescriptorPool m_descriptorPool;
+    ::std::vector<VkDescriptorSet> m_descriptorSets;
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
 
@@ -54,6 +57,14 @@ private_fun:
     //---------render pass---------//
     void f_createRenderPass();
     void f_destroyRenderPass(){ vkDestroyRenderPass(p_base->m_device, m_renderPass, nullptr); }
+
+    //--------- descriptor(uniform) ---------//
+    void f_createDescriptorSetLayout();
+    void f_destroyDescriptorSetLayout() { vkDestroyDescriptorSetLayout(p_base->m_device, m_descriptorSetLayout, nullptr); }
+    void f_createDescriptorPool();
+    void f_destroyDescriptorPool() { vkDestroyDescriptorPool(p_base->m_device, m_descriptorPool, nullptr); }
+    void f_createDescriptorSets();
+    void f_destroyDescriptorSets() { }
 
     //---------pipeline layout---------//
     void f_createPipelineLayout();

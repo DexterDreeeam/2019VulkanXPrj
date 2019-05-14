@@ -26,9 +26,9 @@ public_def:
     friend class c_vk;
 
 public_fun:
-    c_vk_link(c_vk_base * base, c_vk_rendering * rendering) 
+    c_vk_link(c_vk_base * base, c_vk_rendering * rendering, c_vk_data * data) 
         : 
-        p_base(base), p_rendering(rendering)
+        p_base(base), p_rendering(rendering), p_data(data)
        ,currentFrame(0)
        ,m_imageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT)
        ,m_renderFinishedSemaphores(MAX_FRAMES_IN_FLIGHT) 
@@ -45,6 +45,7 @@ private_mem:
     c_vk_base * p_base;
     c_vk_data * p_data;
     c_vk_rendering * p_rendering;
+    //c_eventMgr * p_mgr;
 
     /*
         semaphore be used amongst GPU queues : CPU wouldn't stop submit, submit cmd queue would cause CPU memory overflow

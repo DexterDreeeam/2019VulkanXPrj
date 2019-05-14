@@ -59,6 +59,7 @@ public_def:
             const char * applicationName;
             const char * engineName;
         } vkInstance_xdesc;
+
     }c_vk_xdesc;
 
     typedef c_vk_presentation::SwapChainSupportDetails SwapChainSupportDetails;
@@ -70,7 +71,7 @@ public_fun:
         m_base() // vk base handle
         , m_data(&m_base) // app data
         , m_rendering(&m_base, &m_data)
-        , m_link(&m_base, &m_rendering) 
+        , m_link(&m_base, &m_rendering, &m_data) 
     { }
     void f_setupVk(c_vk_xdesc * vkDesc); //initial vk
     ~c_vk(); //clean vk

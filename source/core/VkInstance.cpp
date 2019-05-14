@@ -43,6 +43,7 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_rendering.m_presentation.f_createImageViews();
     
     m_rendering.m_pipeline.f_createRenderPass();
+    m_rendering.m_pipeline.f_createDescriptorSetLayout();
     m_rendering.m_pipeline.f_createPipelineLayout();
     m_rendering.m_pipeline.f_createGraphicsPipeline();
     
@@ -51,6 +52,11 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
 
     m_data.f_createVertexBuffer();
     m_data.f_createIndexBuffer();
+    m_data.f_createUniformObjs();
+    m_data.f_createUniformBuffer();
+
+    m_rendering.m_pipeline.f_createDescriptorPool();
+    m_rendering.m_pipeline.f_createDescriptorSets();
 
     m_rendering.f_createCommandBuffers();
 
@@ -58,6 +64,7 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_link.f_createFences();
 
     g_vk = this;
+    //m_link.p_mgr = vkDesc->eventMgr;
 }
 
 c_vk::~c_vk()
@@ -65,13 +72,23 @@ c_vk::~c_vk()
     m_link.f_destroyFences();
     m_link.f_destroySemaphores();
 
+    m_rendering.m_pipeline.f_destroyDescriptorSets();
+    m_rendering.m_pipeline.f_destroyDescriptorPool();
+
+    m_data.f_destroyUniformBuffer();
+    m_data.f_destroyIndexBuffer();
+    m_data.f_destroyVertexBuffer();
+
     m_rendering.f_destroyCommandPool();
     m_rendering.f_destroyFramebuffers();
     
     m_rendering.m_pipeline.f_destroyGraphicsPipeline();
     m_rendering.m_pipeline.f_destroyPipelineLayout();
+    m_rendering.m_pipeline.f_destroyDescriptorSetLayout();
     m_rendering.m_pipeline.f_destroyRenderPass();
 
+    m_data.f_destroyUniformBuffer();
+    m_data.f_destroyIndexBuffer();
     m_data.f_destroyVertexBuffer();
     
     m_rendering.m_presentation.f_destroyImageViews();

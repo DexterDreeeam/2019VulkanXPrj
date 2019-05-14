@@ -57,6 +57,7 @@ private_mem:
     VkQueue m_presentQueue; //present queue in device -> Type: [VkQueue]
     VkCommandPool m_commandPool;
 
+    t_U16 m_imageCount;
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
 

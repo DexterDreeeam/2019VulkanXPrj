@@ -108,13 +108,23 @@ void c_vk_rendering::f_createCommandBuffers()
                 p_data->m_vertexBuffers.size(), 
                 p_data->m_vertexBuffers.data(), 
                 p_data->m_vertexBufferOffsets.data()
-            );
+            ); //vertice
             vkCmdBindIndexBuffer(
                 m_commandBuffers[i], 
                 p_data->m_indexBuffers[0],
                 p_data->m_indexBufferOffsets[0],
                 VK_INDEX_TYPE_UINT16//VK_INDEX_TYPE_UINT16
-            );
+            ); //indice
+            vkCmdBindDescriptorSets(
+                m_commandBuffers[i], 
+                VK_PIPELINE_BIND_POINT_GRAPHICS, 
+                m_pipeline.m_pipelineLayout, 
+                0, 
+                1, 
+                &(m_pipeline.m_descriptorSets[0]/*i]*/), 
+                0, 
+                nullptr
+            ); //uniform
             vkCmdDrawIndexed( //vkCmdDraw
                 m_commandBuffers[i], 
                 p_data->m_pointNumbers[0],
@@ -122,7 +132,7 @@ void c_vk_rendering::f_createCommandBuffers()
                 0, 
                 0,
                 0
-            );
+            ); //draw
         
         vkCmdEndRenderPass(m_commandBuffers[i]);
         

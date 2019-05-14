@@ -1,13 +1,16 @@
-﻿  Presentation.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\presentation.cpp(20): error C2374: “x_NS::g_deviceExtensions”: 重定义；多次初始化
-  d:\xprogramgit\2019vulkanxprj\source\core\presentation.hpp(35): note: 参见“x_NS::g_deviceExtensions”的声明
+﻿  EventMgr.cpp
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(100): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(108): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(57): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
+  Link.cpp
   VkInstance.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(118): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(52): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(126): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(59): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(20): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(52): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(30): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(59): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
-  ValidationLayer.cpp
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(100): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(108): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(57): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(108): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
+d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(128): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
+  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(57): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
+  _prj_00_core.vcxproj -> D:\xProgramGit\2019VulkanXPrj\_lib_internal\xcore.lib

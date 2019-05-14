@@ -63,14 +63,119 @@ void c_vk_pipeline::f_createRenderPass()
     }
 }
 
+void c_vk_pipeline::f_createDescriptorSetLayout() 
+{
+    VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &uboLayoutBinding;
+
+    if (vkCreateDescriptorSetLayout(p_base->m_device, &layoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS) 
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor set layout!");
+    #endif __CODE_END__(DEBUG_X)
+    }
+}
+
+void c_vk_pipeline::f_createDescriptorPool()
+{
+    VkDescriptorPoolSize poolSize = {};
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
+
+    VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.maxSets = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);;
+
+    if (vkCreateDescriptorPool(p_base->m_device, &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS) 
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor pool!");
+    #endif __CODE_END__(DEBUG_X)
+    }
+}
+
+void c_vk_pipeline::f_createDescriptorSets()
+{
+    ::std::vector<VkDescriptorSetLayout> layouts(p_data->m_uniformBuffers.size()/*p_base->m_imageCount*/, m_descriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = m_descriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
+        allocInfo.pSetLayouts = layouts.data();
+    
+    m_descriptorSets.resize(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
+    if (vkAllocateDescriptorSets(p_base->m_device, &allocInfo, m_descriptorSets.data()) != VK_SUCCESS) 
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to allocate descriptor sets!");
+    #endif __CODE_END__(DEBUG_X)
+    }
+
+    /*
+    for (size_t i = 0; i != p_base->m_imageCount; ++i)
+    {
+        VkDescriptorBufferInfo bufferInfo = {};
+            bufferInfo.buffer = p_data->m_uniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(c_vk_data::UniformBufferObject);
+
+        VkWriteDescriptorSet descriptorWrite = {};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = m_descriptorSets[i];
+            descriptorWrite.dstBinding = 0;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+            descriptorWrite.pImageInfo = nullptr; // Optional
+            descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+        vkUpdateDescriptorSets(p_base->m_device, 1, &descriptorWrite, 0, nullptr);
+    }
+    */
+
+    for(int i = 0; i != p_data->m_uniformBuffers.size(); ++i)
+    {
+        VkDescriptorBufferInfo bufferInfo = {};
+            bufferInfo.buffer = p_data->m_uniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(c_vk_data::UniformBufferObject);
+
+        VkWriteDescriptorSet descriptorWrite = {};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = m_descriptorSets[i];
+            descriptorWrite.dstBinding = 0;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+            descriptorWrite.pImageInfo = nullptr; // Optional
+            descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+        vkUpdateDescriptorSets(p_base->m_device, 1, &descriptorWrite, 0, nullptr);
+    }
+
+}
+
 void c_vk_pipeline::f_createPipelineLayout()
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
+        pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
+        pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
     if (vkCreatePipelineLayout(p_base->m_device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
@@ -84,9 +189,9 @@ VkShaderModule c_vk_pipeline::f_createShaderModule(const ::std::vector<char> & c
 {
     VkShaderModule shaderModule;
     VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const t_U32*>(code.data());
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const t_U32*>(code.data());
 
     if (vkCreateShaderModule(p_base->m_device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
     {
@@ -157,7 +262,7 @@ void c_vk_pipeline::f_createGraphicsPipeline()
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; //VK_FRONT_FACE_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
         rasterizer.depthBiasConstantFactor = 0.0f; // Optional
         rasterizer.depthBiasClamp = 0.0f; // Optional

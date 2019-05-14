@@ -134,6 +134,8 @@ void c_vk_presentation::f_createSwapChain()
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
 
+    p_base->m_imageCount = imageCount;
+
     c_vk_base::QueueFamilyIndices indices = p_base->m_familyIndices;
     t_U32 queueFamilyIndices[] = { static_cast<t_U32>(indices.graphicsFamily), static_cast<t_U32>(indices.presentFamily) };
     VkSwapchainCreateInfoKHR createInfo = {};

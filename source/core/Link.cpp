@@ -83,6 +83,10 @@ void c_vk_link::f_drawFrame()
         #endif __CODE_END__(DEBUG_X)
     #endif __CODE_END__(WINDOW_RESIZE)
 
+    //--------- logical computing ---------//
+    //p_mgr->f_updateUniform();
+    p_data->f_updateUniformBuffer(/*imageIndex*/);
+
     vkResetFences(p_base->m_device, 1, &m_flightFences[currentFrame]);
 
     /*
@@ -197,12 +201,24 @@ void c_vk_link::f_reconstruct_onWindowResize()
     p_rendering->m_pipeline.f_createGraphicsPipeline();
     
     p_rendering->f_createFramebuffers();
+
+    p_data->f_createUniformBuffer();
+
+    p_rendering->m_pipeline.f_createDescriptorPool();
+    p_rendering->m_pipeline.f_createDescriptorSets();
+
     p_rendering->f_createCommandBuffers();
 }
 
 void c_vk_link::f_cleanup_onWindowResize()
 {
     p_rendering->f_destroyFramebuffers();
+
+    p_data->f_destroyUniformBuffer();
+
+    p_rendering->m_pipeline.f_destroyDescriptorSets();
+    p_rendering->m_pipeline.f_destroyDescriptorPool();
+
     p_rendering->f_reconstructCommandBuffers();
     
     p_rendering->m_pipeline.f_destroyGraphicsPipeline();

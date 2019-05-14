@@ -39,11 +39,12 @@ public_fun:
     void initVulkan(t_U32 width, t_U32 height, const char * title)
     {
         c_vk::c_vk_xdesc vkDesc = {};
-        vkDesc.glfw_xdesc.width = width;
-        vkDesc.glfw_xdesc.height = height;
-        vkDesc.glfw_xdesc.title = title;
-        vkDesc.vkInstance_xdesc.applicationName = __XVK_APPLICATION_NAME__;
-        vkDesc.vkInstance_xdesc.engineName = __XVK_ENGINE_NAME__;
+            vkDesc.glfw_xdesc.width = width;
+            vkDesc.glfw_xdesc.height = height;
+            vkDesc.glfw_xdesc.title = title;
+            vkDesc.vkInstance_xdesc.applicationName = __XVK_APPLICATION_NAME__;
+            vkDesc.vkInstance_xdesc.engineName = __XVK_ENGINE_NAME__;
+            //vkDesc.eventMgr = &m_mgr;
         m_vk.f_setupVk(&vkDesc);
     }
 
@@ -53,6 +54,7 @@ public_fun:
         while (m_vk.is_glfwShouldNotClose())
         {
             m_vk.f_glfwPollEvents();
+            m_mgr.f_updateUniform();
             m_vk.f_loopBody();
         }
 

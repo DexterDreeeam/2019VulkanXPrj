@@ -120,6 +120,43 @@ void c_vk_data::f_createIndexBuffer()
     m_pointNumbers.push_back(points);
 }
 
+void c_vk_data::f_createUniformBuffer()
+{
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+    m_uniformBuffers.resize(m_uniformObjs.size());//p_base->m_imageCount);
+    m_uniformBufferMemorys.resize(m_uniformBuffers.size());//p_base->m_imageCount);
+
+    for (size_t i = 0; i != m_uniformBuffers.size()/*p_base->m_imageCount*/; ++i)
+    {
+        f_createBuffer(
+            bufferSize, 
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+            m_uniformBuffers[i], 
+            m_uniformBufferMemorys[i]
+        );
+    }
+}
+
+void c_vk_data::f_updateUniformBuffer(/*t_U32 currentImage*/)
+{
+    /*
+    void * data;
+    vkMapMemory(p_base->m_device, m_uniformBufferMemorys[currentImage], 0, sizeof(ubo), 0, &data);
+        memcpy(data, &ubo, sizeof(ubo));
+    vkUnmapMemory(p_base->m_device, m_uniformBufferMemorys[currentImage]);
+    */
+
+    for(t_U32 i = 0; i != m_uniformObjs.size(); ++i)
+    {
+        void * data;
+        vkMapMemory(p_base->m_device, m_uniformBufferMemorys[i], 0, sizeof(UniformBufferObject), 0, &data);
+            memcpy(data, &(m_uniformObjs[i]), sizeof(UniformBufferObject));
+        vkUnmapMemory(p_base->m_device, m_uniformBufferMemorys[i]);
+    }
+}
+
 void c_vk_data::f_createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer & buffer, VkDeviceMemory & bufferMemory)
 {
     VkBufferCreateInfo bufferInfo = {};
