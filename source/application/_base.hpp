@@ -29,11 +29,25 @@ public_fun:
     app()
     { }
 
-    void initApp(const char * vertPath, const char * fragPath)
+    void initApp(const char * vertPath, const char * fragPath, const char ** textures, t_U32 textureCount)
     {
         m_mgr.f_setVk(&m_vk);
-        m_mgr.f_setVertShader(vertPath);
-        m_mgr.f_setFragShader(fragPath);
+        
+        
+        auto modelIndex = m_mgr.f_createNewModel();
+            m_mgr.f_setVertShader(vertPath, modelIndex);
+            m_mgr.f_setFragShader(fragPath, modelIndex);
+            m_mgr.f_setTextures(textures, textureCount, modelIndex);
+            m_mgr.f_setVertice();
+            m_mgr.f_setIndice();
+    }
+
+    void setShaderPath(const char * vertPath, const char * fragPath, t_S32 index = -1)
+    {
+        if(index == -1)
+        {
+            
+        }
     }
 
     void initVulkan(t_U32 width, t_U32 height, const char * title)

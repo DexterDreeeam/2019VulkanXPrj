@@ -26,6 +26,8 @@ const ::std::vector<const char * > g_deviceExtensions =
 
 void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
 {
+    g_vk = this;
+
     f_glfwInit(&(vkDesc->glfw_xdesc));
     f_createVkInstance(&(vkDesc->vkInstance_xdesc));
     #if __CODE_START__(DEBUG_X)
@@ -54,6 +56,7 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_data.f_createIndexBuffer();
     m_data.f_createUniformObjs();
     m_data.f_createUniformBuffer();
+    m_data.f_createTextureImage();
 
     m_rendering.m_pipeline.f_createDescriptorPool();
     m_rendering.m_pipeline.f_createDescriptorSets();
@@ -63,7 +66,6 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_link.f_createSemaphores();
     m_link.f_createFences();
 
-    g_vk = this;
     //m_link.p_mgr = vkDesc->eventMgr;
 }
 
@@ -75,6 +77,7 @@ c_vk::~c_vk()
     m_rendering.m_pipeline.f_destroyDescriptorSets();
     m_rendering.m_pipeline.f_destroyDescriptorPool();
 
+    m_data.f_destroyTextureImage();
     m_data.f_destroyUniformBuffer();
     m_data.f_destroyIndexBuffer();
     m_data.f_destroyVertexBuffer();

@@ -22,6 +22,7 @@
     <ClInclude Include="..\source\application\_base.hpp" />
     <ClInclude Include="..\source\core\CoreGlobal.hpp" />
     <ClInclude Include="..\source\core\data\Data.hpp" />
+    <ClInclude Include="..\source\core\data\Model.hpp" />
     <ClInclude Include="..\source\core\data\Vertex.hpp" />
     <ClInclude Include="..\source\core\EventMgr.hpp" />
     <ClInclude Include="..\source\core\GraphicsPipeline.hpp" />
@@ -37,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\data\Data.cpp" />
+    <ClCompile Include="..\source\core\data\Model.cpp" />
     <ClCompile Include="..\source\core\EventMgr.cpp" />
     <ClCompile Include="..\source\core\GraphicsPipeline.cpp" />
     <ClCompile Include="..\source\core\Link.cpp" />

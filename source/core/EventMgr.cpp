@@ -17,6 +17,59 @@
 
 _x_NS_START_
 
+void c_eventMgr::f_setVertShader(const char * str, t_S32 index)
+{
+    if (index < 0 || index >= p_vk->m_data.m_models.size())
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<EventMgr.cpp> Failed to set vertex shader path!");
+    #endif __CODE_END__(DEBUG_X)
+    }
+
+    p_vk->m_data.m_models[index].vertPath = str;
+
+    p_vk->m_base.m_vertPath = str;
+}
+
+void c_eventMgr::f_setFragShader(const char * str, t_S32 index)
+{
+    if (index < 0 || index >= p_vk->m_data.m_models.size())
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<EventMgr.cpp> Failed to set fragment shader path!");
+    #endif __CODE_END__(DEBUG_X)
+    }
+
+    p_vk->m_data.m_models[index].fragPath = str;
+
+    p_vk->m_base.m_fragPath = str;
+}
+
+void c_eventMgr::f_setTextures(const char ** strs, t_U32 textureCount, t_S32 index)
+{
+    if (index < 0 || index >= p_vk->m_data.m_models.size())
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<EventMgr.cpp> Failed to set textures path!");
+    #endif __CODE_END__(DEBUG_X)
+    }
+
+    for(int i = 0; i != textureCount; ++i)
+    {
+        p_vk->m_data.m_models[index].textures.push_back(strs[i]);
+    }
+}
+
+void c_eventMgr::f_setVertice()
+{
+
+}
+
+void c_eventMgr::f_setIndice()
+{
+
+}
+
 void c_eventMgr::f_updateUniform()
 {
     static auto startTime = ::std::chrono::high_resolution_clock::now();

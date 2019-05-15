@@ -29,7 +29,13 @@ int main()
 #endif __CODE_END__(DEBUG_X)
     {
         app * pApp = new x_NS::_prj_02_loadModel;
-        pApp->initApp("../shader_spv/_prj_p02_loadModel_vert.spv", "../shader_spv/_prj_p02_loadModel_frag.spv");
+
+        const char * texturePaths[] = { "../texture/texture.jpg" };
+        pApp->initApp(
+            "../shader_spv/_prj_p02_loadModel_vert.spv", 
+            "../shader_spv/_prj_p02_loadModel_frag.spv",
+            texturePaths, 1
+        );
         pApp->initVulkan(800, 600, "_prj_p02_loadModel");
         pApp->mainLoop();
         pApp->cleanup();

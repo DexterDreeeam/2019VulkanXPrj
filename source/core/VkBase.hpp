@@ -35,6 +35,8 @@ public_def:
     friend class c_vk_link;
     friend class c_vk_data;
     friend class c_eventMgr;
+    friend VkCommandBuffer beginSingleTimeCommands();
+    friend void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     typedef struct
     {
