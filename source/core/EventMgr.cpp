@@ -15,6 +15,10 @@
 
 #include "../core/EventMgr.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "../tool/tiny_obj_loader.h"
+#include <unordered_map>
+
 _x_NS_START_
 
 void c_eventMgr::f_setVertShader(const char * str, t_S32 index)
@@ -60,14 +64,46 @@ void c_eventMgr::f_setTextures(const char ** strs, t_U32 textureCount, t_S32 ind
     }
 }
 
-void c_eventMgr::f_setVertice()
+void c_eventMgr::f_setModel(const char * str, t_S32 index)
 {
+    tinyobj::attrib_t attrib;
+    ::std::vector<tinyobj::shape_t> shapes;
+    ::std::vector<tinyobj::material_t> materials;
+    ::std::string warn, err;
 
-}
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, str)) 
+    {
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error(warn + err);
+    #endif __CODE_END__(DEBUG_X)
+    }
 
-void c_eventMgr::f_setIndice()
-{
+    ::std::unordered_map<t_Vertex, t_U32> uniqueVertices = {};
 
+    for (const auto & shape : shapes) 
+    {
+        for (const auto & vertexIndex : shape.mesh.indices)
+        {
+            t_Vertex vertex = {};
+            vertex.pos = {
+                attrib.vertices[3 * vertexIndex.vertex_index + 0],
+                attrib.vertices[3 * vertexIndex.vertex_index + 1],
+                attrib.vertices[3 * vertexIndex.vertex_index + 2]
+            };
+
+            vertex.texCoord = {
+                attrib.texcoords[2 * vertexIndex.texcoord_index + 0],
+                1.0f - attrib.texcoords[2 * vertexIndex.texcoord_index + 1]
+            };
+
+            if (uniqueVertices.count(vertex) == 0) 
+            {
+                uniqueVertices[vertex] = static_cast<uint32_t>(p_vk->m_data.m_models[index].vertice.size());
+                p_vk->m_data.m_models[index].vertice.push_back(vertex);
+            }
+            p_vk->m_data.m_models[index].indice.push_back(uniqueVertices[vertex]);
+        }
+    }
 }
 
 void c_eventMgr::f_updateUniform()
@@ -77,7 +113,7 @@ void c_eventMgr::f_updateUniform()
     float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     c_vk_data::UniformBufferObject ubo = {};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), (float)(p_vk->m_base.m_swapChainExtent.width) / (float)(p_vk->m_base.m_swapChainExtent.height), 0.1f, 10.0f);
         ubo.proj[1][1] *= -1;

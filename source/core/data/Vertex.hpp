@@ -29,8 +29,9 @@ _x_NS_START_
 
 struct t_Vertex
 {
-    t_Vec2 pos;
+    t_Vec3 pos;
     t_Vec3 color;
+    t_Vec2 texCoord;
 
     static VkVertexInputBindingDescription getBindingDescription()
     {
@@ -48,18 +49,41 @@ struct t_Vertex
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(t_Vertex, pos);
+
+        //attributeDescriptions[1].binding = 0;
+        //attributeDescriptions[1].location = 1;
+        //attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        //attributeDescriptions[1].offset = offsetof(t_Vertex, color);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(t_Vertex, color);
+        attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(t_Vertex, texCoord);
 
         return attributeDescriptions;
+    }
+
+    bool operator==(const t_Vertex & other) const 
+    {
+        return pos == other.pos /*&& color == other.color*/ && texCoord == other.texCoord;
     }
 };
 
 _x_NS_END_
+
+namespace std
+{
+    template<> struct hash<x_NS::t_Vertex>
+    {
+        size_t operator()(x_NS::t_Vertex const & vertex) const
+        {
+            return ((hash<glm::vec3>()(vertex.pos)
+                    /*^(hash<glm::vec3>()(vertex.color) << 1)*/) >> 1) ^
+                    (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}
 
 #endif

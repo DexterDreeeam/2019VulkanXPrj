@@ -26,8 +26,8 @@
 
 _x_NS_START_
 
-extern const ::std::vector<::std::vector<t_Vertex>> vertices;
-extern const ::std::vector<::std::vector<t_U16>> indices;
+//::std::vector<::std::vector<t_Vertex>> vertices;
+//::std::vector<::std::vector<t_U16>> indices;
 
 class c_vk_data
 {
@@ -66,6 +66,9 @@ private_mem:
 
     ::std::vector<::std::vector<VkImage>> m_textureImages;
     ::std::vector<::std::vector<VkDeviceMemory>> m_textureImageMemorys;
+    ::std::vector<::std::vector<VkImageView>> m_textureImageViews;
+    ::std::vector<::std::vector<VkSampler>> m_textureSamplers;
+
 
     ::std::vector<t_U32> m_pointNumbers;
 
@@ -95,7 +98,7 @@ private_fun:
     }
 
     //--------- uniform buffer ---------//
-    void f_createUniformObjs() { m_uniformObjs.resize(vertices.size()); }
+    void f_createUniformObjs() { m_uniformObjs.resize(m_models.size()); }
     void f_createUniformBuffer();
     void f_destroyUniformBuffer()
     {
@@ -125,6 +128,28 @@ private_fun:
         VkImageTiling tiling, VkImageUsageFlags usage,
         VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory
     );
+    void f_createTextureImageViews();
+    void f_destroyTextureImageViews()
+    {
+        for(auto & vImageViews : m_textureImageViews)
+        {
+            for(auto & imageView : vImageViews)
+            {
+                vkDestroyImageView(p_base->m_device, imageView, nullptr);
+            }
+        }
+    }
+    void f_createTextureSamplers();
+    void f_destroyTextureSamplers() 
+    {
+        for (auto & vTextureSampler : m_textureSamplers)
+        {
+            for (auto & textureSampler : vTextureSampler)
+            {
+                vkDestroySampler(p_base->m_device, textureSampler, nullptr);
+            }
+        }
+    }
 
     //--------- general buffer ---------//
     void f_createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer & buffer, VkDeviceMemory & bufferMemory);

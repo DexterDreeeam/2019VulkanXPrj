@@ -39,8 +39,7 @@ public_fun:
     void f_setVertShader(const char * str, t_S32 index);
     void f_setFragShader(const char * str, t_S32 index);
     void f_setTextures(const char ** strs, t_U32 textureCount, t_S32 index);
-    void f_setVertice();
-    void f_setIndice();
+    void f_setModel(const char * str, t_S32 index);
 
     void f_updateUniform();
 

@@ -98,7 +98,8 @@ typedef bool t_Bool;
 typedef signed char t_S8;
 typedef unsigned char t_U8;
 typedef signed short t_S16;
-typedef unsigned short t_U16;
+typedef unsigned short t_
+;
 typedef signed int t_S32;
 typedef unsigned int t_U32;
 typedef signed long int t_S64;

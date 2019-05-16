@@ -119,6 +119,7 @@ private_fun:
     t_U32 f_deviceSuitabilityRate(VkPhysicalDevice device);
     t_Bool is_deviceExtensionSuitable(VkPhysicalDevice device);
     t_Bool is_deviceQueueFamilySuitable(VkPhysicalDevice device);
+    t_Bool is_deviceSamplerAnisotropySupport(VkPhysicalDevice device);
     void f_destroyLogicalDevice(){ vkDestroyDevice(m_base.m_device, nullptr); }
 
     //---------Others---------//
@@ -138,6 +139,7 @@ private_fun:
             return 
                 is_deviceExtensionSuitable(m_base.m_physicalDevice) &&
                 is_deviceQueueFamilySuitable(m_base.m_physicalDevice) &&
+                is_deviceSamplerAnisotropySupport(m_base.m_physicalDevice) &&
                 !details.formats.empty() &&
                 !details.presentModes.empty();
         }

@@ -40,25 +40,29 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     f_findQueueFamilies();
     f_createLogicalDevice();
 
+    m_rendering.f_createCommandPool();
+
     m_rendering.m_presentation.f_createSwapChain();
     m_rendering.m_presentation.f_createImages();
     m_rendering.m_presentation.f_createImageViews();
-    
+
     m_rendering.m_pipeline.f_createRenderPass();
-    m_rendering.m_pipeline.f_createDescriptorSetLayout();
+    m_rendering.m_pipeline.f_createDescriptorSetLayouts();
     m_rendering.m_pipeline.f_createPipelineLayout();
     m_rendering.m_pipeline.f_createGraphicsPipeline();
+    m_rendering.m_pipeline.f_createDepthImage();
     
     m_rendering.f_createFramebuffers();
-    m_rendering.f_createCommandPool();
 
     m_data.f_createVertexBuffer();
     m_data.f_createIndexBuffer();
     m_data.f_createUniformObjs();
     m_data.f_createUniformBuffer();
     m_data.f_createTextureImage();
+    m_data.f_createTextureImageViews();
+    m_data.f_createTextureSamplers();
 
-    m_rendering.m_pipeline.f_createDescriptorPool();
+    m_rendering.m_pipeline.f_createDescriptorPools();
     m_rendering.m_pipeline.f_createDescriptorSets();
 
     m_rendering.f_createCommandBuffers();
@@ -75,24 +79,24 @@ c_vk::~c_vk()
     m_link.f_destroySemaphores();
 
     m_rendering.m_pipeline.f_destroyDescriptorSets();
-    m_rendering.m_pipeline.f_destroyDescriptorPool();
+    m_rendering.m_pipeline.f_destroyDescriptorPools();
 
+    m_data.f_destroyTextureSamplers();
+    m_data.f_destroyTextureImageViews();
     m_data.f_destroyTextureImage();
     m_data.f_destroyUniformBuffer();
     m_data.f_destroyIndexBuffer();
     m_data.f_destroyVertexBuffer();
-
-    m_rendering.f_destroyCommandPool();
+    
     m_rendering.f_destroyFramebuffers();
     
+    m_rendering.m_pipeline.f_destroyDepthImage();
     m_rendering.m_pipeline.f_destroyGraphicsPipeline();
     m_rendering.m_pipeline.f_destroyPipelineLayout();
-    m_rendering.m_pipeline.f_destroyDescriptorSetLayout();
+    m_rendering.m_pipeline.f_destroyDescriptorSetLayouts();
     m_rendering.m_pipeline.f_destroyRenderPass();
 
-    m_data.f_destroyUniformBuffer();
-    m_data.f_destroyIndexBuffer();
-    m_data.f_destroyVertexBuffer();
+    m_rendering.f_destroyCommandPool();
     
     m_rendering.m_presentation.f_destroyImageViews();
     m_rendering.m_presentation.f_destroySwapChain();
@@ -285,6 +289,16 @@ t_Bool c_vk::is_deviceExtensionSuitable(VkPhysicalDevice device)
 }
 #endif __CODE_END__(DEBUG_X)
 
+#if __CODE_START__(DEBUG_X)
+t_Bool is_deviceSamplerAnisotropySupport(VkPhysicalDevice device)
+{
+    VkPhysicalDeviceFeatures supportedFeatures;
+        vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+    return supportedFeatures.samplerAnisotropy;
+}
+#endif __CODE_END__(DEBUG_X)
+
 void c_vk::f_createLogicalDevice()
 {
     QueueFamilyIndices indices = m_base.m_familyIndices;
@@ -308,7 +322,7 @@ void c_vk::f_createLogicalDevice()
     }
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
-        //deviceFeatures.samplerAnisotropy = true;
+        deviceFeatures.samplerAnisotropy = VK_TRUE;//VK_FALSE;
 
     VkDeviceCreateInfo createInfo = {};
     {

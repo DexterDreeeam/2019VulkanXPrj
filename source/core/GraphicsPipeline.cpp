@@ -33,10 +33,25 @@ void c_vk_pipeline::f_createRenderPass()
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentDescription depthAttachment = {};
+        depthAttachment.format = f_findDepthFormat();
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef = {};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkSubpassDescription subpass = {}; //subpasses in render pass
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
     VkSubpassDependency dependency = {}; //links between subpasses
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -46,10 +61,12 @@ void c_vk_pipeline::f_createRenderPass()
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+    ::std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+
     VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
+        renderPassInfo.pAttachments = attachments.data();
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 1;
@@ -63,64 +80,163 @@ void c_vk_pipeline::f_createRenderPass()
     }
 }
 
-void c_vk_pipeline::f_createDescriptorSetLayout() 
+void c_vk_pipeline::f_createDepthImage()
 {
-    VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+    VkFormat depthFormat = f_findDepthFormat();
+    p_data->f_createImage(
+        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 
+        depthFormat, 
+        VK_IMAGE_TILING_OPTIMAL, 
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+        m_depthImage, m_depthImageMemory
+    );
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &uboLayoutBinding;
+    VkImageViewCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = m_depthImage;
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = depthFormat;
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;//VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
 
-    if (vkCreateDescriptorSetLayout(p_base->m_device, &layoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS) 
+    if (vkCreateImageView(p_base->m_device, &createInfo, nullptr, &m_depthImageView) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
-        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor set layout!");
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create image views!");
     #endif __CODE_END__(DEBUG_X)
+    }
+
+    p_data->f_transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+}
+
+void c_vk_pipeline::f_createDescriptorSetLayouts() 
+{
+    m_descriptorSetLayouts.resize(p_data->m_models.size());
+
+    for(int i = 0; i != p_data->m_models.size(); ++i)
+    {
+        ::std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+        VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+            uboLayoutBinding.binding = 0;
+            uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            uboLayoutBinding.descriptorCount = 1;
+            uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+            uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+        bindings.push_back(uboLayoutBinding);
+
+        for(int j = 0; j != p_data->m_models[i].textures.size(); ++j)
+        {
+            VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+                samplerLayoutBinding.binding = 1;
+                samplerLayoutBinding.descriptorCount = 1;
+                samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                samplerLayoutBinding.pImmutableSamplers = nullptr;
+                samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            bindings.push_back(samplerLayoutBinding);
+        }
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+            layoutInfo.pBindings = bindings.data();
+        if (vkCreateDescriptorSetLayout(p_base->m_device, &layoutInfo, nullptr, &m_descriptorSetLayouts[i]) != VK_SUCCESS)
+        {
+        #if __CODE_START__(DEBUG_X)
+            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor set layout!");
+        #endif __CODE_END__(DEBUG_X)
+        }
     }
 }
 
-void c_vk_pipeline::f_createDescriptorPool()
+void c_vk_pipeline::f_createDescriptorPools()
 {
-    VkDescriptorPoolSize poolSize = {};
-        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
+    //VkDescriptorPoolSize poolSize = {};
+    //    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    //    poolSize.descriptorCount = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
+    //::std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+    //    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    //    poolSizes[0].descriptorCount = static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
+    //    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    //    poolSizes[1].descriptorCount = static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
 
-    VkDescriptorPoolCreateInfo poolInfo = {};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = 1;
-        poolInfo.pPoolSizes = &poolSize;
-        poolInfo.maxSets = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);;
+    //VkDescriptorPoolCreateInfo poolInfo = {};
+    //    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    //    poolInfo.poolSizeCount = 1;
+    //    poolInfo.pPoolSizes = &poolSize;
+    //    poolInfo.maxSets = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);;
 
-    if (vkCreateDescriptorPool(p_base->m_device, &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS) 
+    //if (vkCreateDescriptorPool(p_base->m_device, &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS) 
+    //{
+    //#if __CODE_START__(DEBUG_X)
+    //    throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor pool!");
+    //#endif __CODE_END__(DEBUG_X)
+    //}
+
+    m_descriptorPools.resize(p_data->m_models.size());
+
+    for (int i = 0; i != p_data->m_models.size(); ++i)
     {
-    #if __CODE_START__(DEBUG_X)
-        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor pool!");
-    #endif __CODE_END__(DEBUG_X)
+        ::std::vector<VkDescriptorPoolSize> poolSizes = {};
+        VkDescriptorPoolSize poolSize;
+        
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
+        poolSizes.push_back(poolSize);
+
+        for(int j = 0; j != p_data->m_models.size(); ++j)
+        {
+            poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSize.descriptorCount = static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
+            poolSizes.push_back(poolSize);
+        }
+
+        VkDescriptorPoolCreateInfo poolInfo = {};
+            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+            poolInfo.pPoolSizes = poolSizes.data();
+            poolInfo.maxSets = static_cast<uint32_t>(p_base->m_imageCount);
+
+        if (vkCreateDescriptorPool(p_base->m_device, &poolInfo, nullptr, &m_descriptorPools[i]) != VK_SUCCESS)
+        {
+        #if __CODE_START__(DEBUG_X)
+            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor pool!");
+        #endif __CODE_END__(DEBUG_X)
+        }
+
     }
 }
 
 void c_vk_pipeline::f_createDescriptorSets()
 {
-    ::std::vector<VkDescriptorSetLayout> layouts(p_data->m_uniformBuffers.size()/*p_base->m_imageCount*/, m_descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = m_descriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
-        allocInfo.pSetLayouts = layouts.data();
-    
-    m_descriptorSets.resize(p_data->m_uniformBuffers.size());//p_base->m_imageCount);
-    if (vkAllocateDescriptorSets(p_base->m_device, &allocInfo, m_descriptorSets.data()) != VK_SUCCESS) 
+    m_descriptorSets.resize(p_data->m_models.size());
+
+    for(int i = 0; i != p_data->m_models.size(); ++i)
     {
-    #if __CODE_START__(DEBUG_X)
-        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to allocate descriptor sets!");
-    #endif __CODE_END__(DEBUG_X)
+        VkDescriptorSetLayout layouts[] = { m_descriptorSetLayouts[i] };
+        VkDescriptorSetAllocateInfo allocInfo = {};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.descriptorPool = m_descriptorPools[i];
+            allocInfo.descriptorSetCount = 1;
+            allocInfo.pSetLayouts = layouts;
+
+        if (vkAllocateDescriptorSets(p_base->m_device, &allocInfo, &m_descriptorSets[i]) != VK_SUCCESS)
+        {
+        #if __CODE_START__(DEBUG_X)
+            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to allocate descriptor sets!");
+        #endif __CODE_END__(DEBUG_X)
+        }
     }
+
 
     /*
     for (size_t i = 0; i != p_base->m_imageCount; ++i)
@@ -145,25 +261,40 @@ void c_vk_pipeline::f_createDescriptorSets()
     }
     */
 
-    for(int i = 0; i != p_data->m_uniformBuffers.size(); ++i)
+    for(int i = 0; i != p_data->m_models.size(); ++i)
     {
         VkDescriptorBufferInfo bufferInfo = {};
             bufferInfo.buffer = p_data->m_uniformBuffers[i];
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(c_vk_data::UniformBufferObject);
+        
+        ::std::vector<VkDescriptorImageInfo> imageInfos(p_data->m_textureImages[i].size());
+        for(int j = 0; j != p_data->m_models[i].textures.size(); ++j)
+        {
+            imageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfos[j].imageView = p_data->m_textureImageViews[i][j];
+            imageInfos[j].sampler = p_data->m_textureSamplers[i][j];
+        }
 
-        VkWriteDescriptorSet descriptorWrite = {};
-            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrite.dstSet = m_descriptorSets[i];
-            descriptorWrite.dstBinding = 0;
-            descriptorWrite.dstArrayElement = 0;
-            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrite.descriptorCount = 1;
-            descriptorWrite.pBufferInfo = &bufferInfo;
-            descriptorWrite.pImageInfo = nullptr; // Optional
-            descriptorWrite.pTexelBufferView = nullptr; // Optional
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 
-        vkUpdateDescriptorSets(p_base->m_device, 1, &descriptorWrite, 0, nullptr);
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = m_descriptorSets[i];
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].descriptorCount = 1;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = m_descriptorSets[i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].descriptorCount = p_data->m_textureImages[i].size();
+        descriptorWrites[1].pImageInfo = imageInfos.data();
+
+        vkUpdateDescriptorSets(p_base->m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
 
 }
@@ -172,8 +303,8 @@ void c_vk_pipeline::f_createPipelineLayout()
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
+        pipelineLayoutInfo.setLayoutCount = m_descriptorSetLayouts.size();
+        pipelineLayoutInfo.pSetLayouts = m_descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
         pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -306,6 +437,18 @@ void c_vk_pipeline::f_createGraphicsPipeline()
         colorBlending.blendConstants[2] = 0.0f; // Optional
         colorBlending.blendConstants[3] = 0.0f; // Optional
 
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.minDepthBounds = 0.0f; // Optional
+        depthStencil.maxDepthBounds = 1.0f; // Optional
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.front = {}; // Optional
+        depthStencil.back = {}; // Optional
+
     VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
     VkPipelineDynamicStateCreateInfo dynamicState = {};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -321,7 +464,7 @@ void c_vk_pipeline::f_createGraphicsPipeline()
         pipelineInfo.pViewportState = &viewportState;
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pDepthStencilState = nullptr; // Optional
+        pipelineInfo.pDepthStencilState = &depthStencil;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = nullptr; // Optional
         pipelineInfo.renderPass = m_renderPass;
@@ -339,6 +482,40 @@ void c_vk_pipeline::f_createGraphicsPipeline()
 
     f_destroyShaderModule(vertShaderModule);
     f_destroyShaderModule(fragShaderModule);
+}
+
+VkFormat c_vk_pipeline::f_findDepthFormat() 
+{
+    return f_findSupportedFormat(
+        { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    );
+}
+
+VkFormat c_vk_pipeline::f_findSupportedFormat(
+    const std::vector<VkFormat> & candidates, 
+    VkImageTiling tiling,
+    VkFormatFeatureFlags features
+) 
+{
+    for (VkFormat format : candidates) 
+    {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(p_base->m_physicalDevice, format, &props);
+
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) 
+        {
+            return format;
+        }
+        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) 
+        {
+            return format;
+        }
+    }
+    #if __CODE_START__(DEBUG_X)
+        throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to find supported format!");
+    #endif __CODE_END__(DEBUG_X)
 }
 
 ::std::vector<char> readFile(const ::std::string & filename)

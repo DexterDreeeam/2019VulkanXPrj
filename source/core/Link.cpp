@@ -199,12 +199,13 @@ void c_vk_link::f_reconstruct_onWindowResize()
 
     p_rendering->m_pipeline.f_createRenderPass();
     p_rendering->m_pipeline.f_createGraphicsPipeline();
+    p_rendering->m_pipeline.f_createDepthImage();
     
     p_rendering->f_createFramebuffers();
 
     p_data->f_createUniformBuffer();
 
-    p_rendering->m_pipeline.f_createDescriptorPool();
+    p_rendering->m_pipeline.f_createDescriptorPools();
     p_rendering->m_pipeline.f_createDescriptorSets();
 
     p_rendering->f_createCommandBuffers();
@@ -217,10 +218,11 @@ void c_vk_link::f_cleanup_onWindowResize()
     p_data->f_destroyUniformBuffer();
 
     p_rendering->m_pipeline.f_destroyDescriptorSets();
-    p_rendering->m_pipeline.f_destroyDescriptorPool();
+    p_rendering->m_pipeline.f_destroyDescriptorPools();
 
     p_rendering->f_reconstructCommandBuffers();
     
+    p_rendering->m_pipeline.f_destroyDepthImage();
     p_rendering->m_pipeline.f_destroyGraphicsPipeline();
     p_rendering->m_pipeline.f_destroyRenderPass();
 

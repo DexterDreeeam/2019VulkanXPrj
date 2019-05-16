@@ -21,63 +21,74 @@
 _x_NS_START_
 
 static t_U32 findMemoryType(VkPhysicalDevice physicalDevice, t_U32 typeFilter, VkMemoryPropertyFlags properties);
+static t_Bool hasStencilComponent(VkFormat format);
 
-const ::std::vector<::std::vector<t_Vertex>> vertices =
-{
-    {
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{ 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}},
-    }
-};
-
-const ::std::vector<::std::vector<t_U16>> indices =
-{
-    {
-        0, 1, 2, 2, 3, 0,
-    }
-};
+//const ::std::vector<::std::vector<t_Vertex>> vertices =
+//{
+//    {
+//        {{-0.5f, -0.5f,  0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+//        {{ 0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+//        {{ 0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+//        {{-0.5f,  0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+//        
+//        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+//        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+//        {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+//        {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+//    }
+//};
+//
+//const ::std::vector<::std::vector<t_U16>> indices =
+//{
+//    {
+//        0, 1, 2, 2, 3, 0,
+//        4, 5, 6, 6, 7, 4,
+//    }
+//};
 
 void c_vk_data::f_createVertexBuffer()
 {
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
     VkDeviceSize vertexBufferOffset = 0;
-    t_U32 vertexCount = static_cast<t_U32>(vertices[0].size());
+    t_U32 vertexCount = 0;
+    
+    for(int i = 0; i != m_models.size(); ++i)
+    {
+        vertexCount = static_cast<t_U32>(m_models[i].vertice.size());
+        VkDeviceSize bufferSize = sizeof(t_Vertex) * vertexCount;
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        f_createBuffer(
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, //VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingBufferMemory
+        );
 
-    VkDeviceSize bufferSize = sizeof(vertices[0][0]) * vertexCount;
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    f_createBuffer(
-        bufferSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, //VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        stagingBuffer,
-        stagingBufferMemory
-    );
+        void * data;
+        vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, m_models[i].vertice.data(), (size_t)bufferSize);
+        vkUnmapMemory(p_base->m_device, stagingBufferMemory);
 
-    void * data;
-    vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices[0].data(), (size_t)bufferSize);
-    vkUnmapMemory(p_base->m_device, stagingBufferMemory);
+        f_createBuffer(
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            vertexBuffer,
+            vertexBufferMemory
+        );
 
-    f_createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        vertexBuffer,
-        vertexBufferMemory
-    );
+        f_copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-    f_copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+        vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
+        vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
 
-    vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
-    vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
-
-    m_vertexBuffers.push_back(vertexBuffer);
-    m_vertexBufferMemorys.push_back(vertexBufferMemory);
-    m_vertexBufferOffsets.push_back(vertexBufferOffset);
+        m_vertexBuffers.push_back(vertexBuffer);
+        m_vertexBufferMemorys.push_back(vertexBufferMemory);
+        m_vertexBufferOffsets.push_back(vertexBufferOffset);
+    }
 }
 
 void c_vk_data::f_createIndexBuffer()
@@ -85,52 +96,55 @@ void c_vk_data::f_createIndexBuffer()
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
     VkDeviceSize indexBufferOffset = 0;
-    VkDeviceSize bufferSize = sizeof(indices[0][0]) * indices[0].size();
-    t_U32 points = indices[0].size();
+    
+    for (int i = 0; i != m_models.size(); ++i)
+    {
+        VkDeviceSize bufferSize = sizeof(t_U32) * m_models[i].indice.size();
+        t_U32 points = m_models[i].indice.size();
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
+        f_createBuffer(
+            bufferSize, 
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+            stagingBuffer, 
+            stagingBufferMemory
+        );
 
-    f_createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-        stagingBuffer, 
-        stagingBufferMemory
-    );
+        void * data;
+        vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, m_models[i].indice.data(), (size_t)bufferSize);
+        vkUnmapMemory(p_base->m_device, stagingBufferMemory);
 
-    void * data;
-    vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, indices[0].data(), (size_t)bufferSize);
-    vkUnmapMemory(p_base->m_device, stagingBufferMemory);
+        f_createBuffer(
+            bufferSize, 
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+            indexBuffer, 
+            indexBufferMemory
+        );
 
-    f_createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-        indexBuffer, 
-        indexBufferMemory
-    );
+        f_copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
-    f_copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+        vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
+        vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
 
-    vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
-    vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
-
-    m_indexBuffers.push_back(indexBuffer);
-    m_indexBufferMemorys.push_back(indexBufferMemory);
-    m_indexBufferOffsets.push_back(indexBufferOffset);
-    m_pointNumbers.push_back(points);
+        m_indexBuffers.push_back(indexBuffer);
+        m_indexBufferMemorys.push_back(indexBufferMemory);
+        m_indexBufferOffsets.push_back(indexBufferOffset);
+        m_pointNumbers.push_back(points);
+    }
 }
 
 void c_vk_data::f_createUniformBuffer()
 {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-    m_uniformBuffers.resize(m_uniformObjs.size());//p_base->m_imageCount);
-    m_uniformBufferMemorys.resize(m_uniformBuffers.size());//p_base->m_imageCount);
+    m_uniformBuffers.resize(m_models.size());//p_base->m_imageCount);
+    m_uniformBufferMemorys.resize(m_models.size());//p_base->m_imageCount);
 
-    for (size_t i = 0; i != m_uniformBuffers.size()/*p_base->m_imageCount*/; ++i)
+    for (size_t i = 0; i != m_models.size()/*p_base->m_imageCount*/; ++i)
     {
         f_createBuffer(
             bufferSize, 
@@ -151,7 +165,7 @@ void c_vk_data::f_updateUniformBuffer(/*t_U32 currentImage*/)
     vkUnmapMemory(p_base->m_device, m_uniformBufferMemorys[currentImage]);
     */
 
-    for(t_U32 i = 0; i != m_uniformObjs.size(); ++i)
+    for(t_U32 i = 0; i != m_models.size(); ++i)
     {
         void * data;
         vkMapMemory(p_base->m_device, m_uniformBufferMemorys[i], 0, sizeof(UniformBufferObject), 0, &data);
@@ -270,6 +284,73 @@ void c_vk_data::f_createImage(
     vkBindImageMemory(p_base->m_device, image, imageMemory, 0);
 }
 
+void c_vk_data::f_createTextureImageViews()
+{
+    m_textureImageViews.resize(m_textureImages.size());
+
+    for(int i = 0; i != m_textureImages.size(); ++i)
+    {
+        m_textureImageViews[i].resize(m_textureImages[i].size());
+        for(int j = 0; j != m_textureImages[i].size(); ++j)
+        {
+            VkImageViewCreateInfo viewInfo = {};
+                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo.image = m_textureImages[i][j];
+                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewInfo.subresourceRange.baseMipLevel = 0;
+                viewInfo.subresourceRange.levelCount = 1;
+                viewInfo.subresourceRange.baseArrayLayer = 0;
+                viewInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(p_base->m_device, &viewInfo, nullptr, &(m_textureImageViews[i][j])) != VK_SUCCESS)
+            {
+            #if __CODE_START__(DEBUG_X)
+                throw ::std::runtime_error("<_appData.cpp> Failed to create texture image view!");
+            #endif __CODE_START__(DEBUG_X)
+            }
+        }
+    }
+}
+
+void c_vk_data::f_createTextureSamplers()
+{
+    m_textureSamplers.resize(m_textureImages.size());
+
+    for(int i = 0; i != m_textureImages.size(); ++i)
+    {
+        m_textureSamplers[i].resize(m_textureImages[i].size());
+        for(int j = 0; j != m_textureImages[i].size(); ++j)
+        {
+            VkSamplerCreateInfo samplerInfo = {};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.anisotropyEnable = VK_TRUE; //VK_FALSE;
+                samplerInfo.maxAnisotropy = 16; //1;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.unnormalizedCoordinates = VK_FALSE;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+
+            if (vkCreateSampler(p_base->m_device, &samplerInfo, nullptr, &m_textureSamplers[i][j]) != VK_SUCCESS)
+            {
+            #if __CODE_START__(DEBUG_X)
+                throw ::std::runtime_error("<_appData.cpp> Failed to create texture sampler!");
+            #endif __CODE_START__(DEBUG_X)
+            }
+        }
+    }
+}
+
 void c_vk_data::f_createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer & buffer, VkDeviceMemory & bufferMemory)
 {
     VkBufferCreateInfo bufferInfo = {};
@@ -285,12 +366,13 @@ void c_vk_data::f_createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMe
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(p_base->m_device, buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(p_base->m_device, buffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(p_base->m_physicalDevice, memRequirements.memoryTypeBits, properties);
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(p_base->m_physicalDevice, memRequirements.memoryTypeBits, properties);
+
     if(vkAllocateMemory(p_base->m_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
     {
     #if __CODE_START__(DEBUG_X)
@@ -327,7 +409,18 @@ void c_vk_data::f_transitionImageLayout(VkImage image, VkFormat format, VkImageL
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) 
+        {
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            if (hasStencilComponent(format)) 
+            {
+                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+            }
+        }
+        else 
+        {
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        }
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;
@@ -348,6 +441,13 @@ void c_vk_data::f_transitionImageLayout(VkImage image, VkFormat format, VkImageL
 
             sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        }
+        else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) 
+        {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         }
         else 
         {
@@ -432,6 +532,11 @@ void c_vk_data::f_endSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkQueueWaitIdle(p_base->m_graphicsQueue);
 
     vkFreeCommandBuffers(p_base->m_device, p_base->m_commandPool, 1, &commandBuffer);
+}
+
+t_Bool hasStencilComponent(VkFormat format)
+{
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
 static t_U32 findMemoryType(VkPhysicalDevice physicalDevice, t_U32 typeFilter, VkMemoryPropertyFlags properties) 

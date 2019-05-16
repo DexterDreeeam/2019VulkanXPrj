@@ -23,13 +23,16 @@ void c_vk_rendering::f_createFramebuffers()
 
     for (t_U32 i = 0; i != m_presentation.m_swapChainImageViews.size(); ++i)
     {
-        VkImageView attachments[] = { m_presentation.m_swapChainImageViews[i] };
+        ::std::array<VkImageView, 2> attachments = {
+            m_presentation.m_swapChainImageViews[i],
+            m_pipeline.m_depthImageView
+        };
 
         VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_pipeline.m_renderPass;
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
+            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+            framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = p_base->m_swapChainExtent.width;
             framebufferInfo.height = p_base->m_swapChainExtent.height;
             framebufferInfo.layers = 1;
@@ -89,50 +92,55 @@ void c_vk_rendering::f_createCommandBuffers()
         #endif __CODE_END__(DEBUG_X)
         }
 
-        VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+        ::std::array<VkClearValue, 2> clearValues = {};
+            clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+            clearValues[1].depthStencil = { 1.0f, 0 };
         VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_pipeline.m_renderPass;
             renderPassInfo.framebuffer = m_swapChainFramebuffers[i];
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = p_base->m_swapChainExtent;
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
+            renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+            renderPassInfo.pClearValues = clearValues.data();
         
         vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.m_graphicsPipeline);
             
+        for(int j = 0; j != p_data->m_models.size(); ++j)
+        {
             vkCmdBindVertexBuffers(
-                m_commandBuffers[i], 
-                0, 
-                p_data->m_vertexBuffers.size(), 
-                p_data->m_vertexBuffers.data(), 
-                p_data->m_vertexBufferOffsets.data()
+                m_commandBuffers[i],
+                0,
+                1,
+                &(p_data->m_vertexBuffers[j]),
+                &(p_data->m_vertexBufferOffsets[j])
             ); //vertice
             vkCmdBindIndexBuffer(
-                m_commandBuffers[i], 
-                p_data->m_indexBuffers[0],
-                p_data->m_indexBufferOffsets[0],
-                VK_INDEX_TYPE_UINT16//VK_INDEX_TYPE_UINT16
+                m_commandBuffers[i],
+                p_data->m_indexBuffers[j],
+                p_data->m_indexBufferOffsets[j],
+                VK_INDEX_TYPE_UINT32//VK_INDEX_TYPE_UINT16
             ); //indice
             vkCmdBindDescriptorSets(
-                m_commandBuffers[i], 
-                VK_PIPELINE_BIND_POINT_GRAPHICS, 
-                m_pipeline.m_pipelineLayout, 
-                0, 
-                1, 
-                &(m_pipeline.m_descriptorSets[0]/*i]*/), 
-                0, 
+                m_commandBuffers[i],
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_pipeline.m_pipelineLayout,
+                0,
+                1,
+                &(m_pipeline.m_descriptorSets[j]/*i]*/),
+                0,
                 nullptr
             ); //uniform
             vkCmdDrawIndexed( //vkCmdDraw
-                m_commandBuffers[i], 
-                p_data->m_pointNumbers[0],
-                1, 
-                0, 
+                m_commandBuffers[i],
+                p_data->m_pointNumbers[j],
+                1,
+                0,
                 0,
                 0
             ); //draw
+        }
         
         vkCmdEndRenderPass(m_commandBuffers[i]);
         

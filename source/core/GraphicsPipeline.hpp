@@ -47,22 +47,50 @@ private_mem:
     c_vk_data * p_data;
 
     VkRenderPass m_renderPass;
-    VkDescriptorSetLayout m_descriptorSetLayout;
-    VkDescriptorPool m_descriptorPool;
+
+    VkImage m_depthImage;
+    VkDeviceMemory m_depthImageMemory;
+    VkImageView m_depthImageView;
+
+    ::std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
+    ::std::vector<VkDescriptorPool> m_descriptorPools;
     ::std::vector<VkDescriptorSet> m_descriptorSets;
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
 
 private_fun:
-    //---------render pass---------//
+    //--------- render pass ---------//
     void f_createRenderPass();
     void f_destroyRenderPass(){ vkDestroyRenderPass(p_base->m_device, m_renderPass, nullptr); }
 
+    //--------- depth image ---------//
+    void f_createDepthImage();
+    void f_destroyDepthImage() 
+    { 
+        vkDestroyImageView(p_base->m_device, m_depthImageView, nullptr);
+        vkDestroyImage(p_base->m_device, m_depthImage, nullptr);
+        vkFreeMemory(p_base->m_device, m_depthImageMemory, nullptr);
+    }
+    VkFormat f_findDepthFormat();
+    VkFormat f_findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
     //--------- descriptor(uniform) ---------//
-    void f_createDescriptorSetLayout();
-    void f_destroyDescriptorSetLayout() { vkDestroyDescriptorSetLayout(p_base->m_device, m_descriptorSetLayout, nullptr); }
-    void f_createDescriptorPool();
-    void f_destroyDescriptorPool() { vkDestroyDescriptorPool(p_base->m_device, m_descriptorPool, nullptr); }
+    void f_createDescriptorSetLayouts();
+    void f_destroyDescriptorSetLayouts() 
+    { 
+        for(auto & layout : m_descriptorSetLayouts)
+        {
+            vkDestroyDescriptorSetLayout(p_base->m_device, layout, nullptr);
+        } 
+    }
+    void f_createDescriptorPools();
+    void f_destroyDescriptorPools() 
+    { 
+        for(auto & pool : m_descriptorPools)
+        {
+            vkDestroyDescriptorPool(p_base->m_device, pool, nullptr);
+        }
+    }
     void f_createDescriptorSets();
     void f_destroyDescriptorSets() { }
 

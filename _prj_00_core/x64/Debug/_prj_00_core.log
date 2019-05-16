@@ -5,27 +5,12 @@ d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(100): warning C4099: �
 d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(108): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
   d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(57): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
 d:\xprogramgit\2019vulkanxprj\source\core\eventmgr.hpp(37): warning C4267: “return”: 从“size_t”转换到“t_S32”，可能丢失数据
-  GraphicsPipeline.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
-  Link.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
-  Presentation.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
+d:\xprogramgit\2019vulkanxprj\source\core\eventmgr.cpp(98): warning C4267: “参数”: 从“size_t”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=t_U32
+          ]
   Rendering.cpp
 d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
-d:\xprogramgit\2019vulkanxprj\source\core\rendering.cpp(111): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-  VkInstance.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(100): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(108): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(57): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(111): warning C4099: “x_NS::c_vk::c_vk_xdesc::glfw_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(50): note: 参见“x_NS::c_vk::c_vk_xdesc::glfw_xdesc”的声明
-d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.cpp(131): warning C4099: “x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”: 类型名称以前使用“struct”现在使用的是“class”
-  d:\xprogramgit\2019vulkanxprj\source\core\vkinstance.hpp(57): note: 参见“x_NS::c_vk::c_vk_xdesc::vkInstance_xdesc”的声明
-  Data.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
-d:\xprogramgit\2019vulkanxprj\source\core\data\data.cpp(89): warning C4267: “初始化”: 从“size_t”转换到“t_U32”，可能丢失数据
   正在生成代码...
   _prj_00_core.vcxproj -> D:\xProgramGit\2019VulkanXPrj\_lib_internal\xcore.lib
