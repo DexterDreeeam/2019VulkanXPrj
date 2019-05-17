@@ -84,7 +84,7 @@ void c_vk_pipeline::f_createDepthImage()
 {
     VkFormat depthFormat = f_findDepthFormat();
     p_data->f_createImage(
-        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 
+        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 1,
         depthFormat, 
         VK_IMAGE_TILING_OPTIMAL, 
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
@@ -114,7 +114,7 @@ void c_vk_pipeline::f_createDepthImage()
     #endif __CODE_END__(DEBUG_X)
     }
 
-    p_data->f_transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    p_data->f_transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 
 }
 

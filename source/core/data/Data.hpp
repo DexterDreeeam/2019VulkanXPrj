@@ -23,6 +23,7 @@
 #include <vector>
 #include <array>
 #include <chrono>
+#include <algorithm>
 
 _x_NS_START_
 
@@ -46,11 +47,21 @@ public_def:
     };
 
 public_fun:
-    c_vk_data(c_vk_base * base) : p_base(base) { }//for(auto & v : vertices) { m_vertexCounts.push_back(v.size()); } }
+    c_vk_data(c_vk_base * base) 
+        : 
+        p_base(base)
+        #if __CODE_START__(MIPMAP)
+            , m_mipLevel(static_cast<t_U32>(-1)) 
+        #endif __CODE_END__(MIPMAP)
+    { }//for(auto & v : vertices) { m_vertexCounts.push_back(v.size()); } }
     ~c_vk_data() { }
 
 private_mem:
     c_vk_base * p_base;
+
+    #if __CODE_START__(MIPMAP)
+        t_U32 m_mipLevel;
+    #endif __CODE_START__(MIPMAP)
 
     ::std::vector<VkBuffer> m_vertexBuffers;
     ::std::vector<VkDeviceMemory> m_vertexBufferMemorys;
@@ -123,8 +134,9 @@ private_fun:
             }
         }
     }
+    void f_generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, t_U32 mipLevels);
     void f_createImage(
-        uint32_t width, uint32_t height, VkFormat format,
+        uint32_t width, uint32_t height, t_U32 mipLevel, VkFormat format,
         VkImageTiling tiling, VkImageUsageFlags usage,
         VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory
     );
@@ -154,7 +166,7 @@ private_fun:
     //--------- general buffer ---------//
     void f_createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer & buffer, VkDeviceMemory & bufferMemory);
     void f_copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    void f_transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void f_transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, t_U32 mipLevel);
     void f_copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
     VkCommandBuffer f_beginSingleTimeCommands();
     void f_endSingleTimeCommands(VkCommandBuffer commandBuffer);

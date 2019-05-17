@@ -31,7 +31,6 @@ void c_eventMgr::f_setVertShader(const char * str, t_S32 index)
     }
 
     p_vk->m_data.m_models[index].vertPath = str;
-
     p_vk->m_base.m_vertPath = str;
 }
 
@@ -45,7 +44,6 @@ void c_eventMgr::f_setFragShader(const char * str, t_S32 index)
     }
 
     p_vk->m_data.m_models[index].fragPath = str;
-
     p_vk->m_base.m_fragPath = str;
 }
 
