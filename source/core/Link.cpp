@@ -199,6 +199,9 @@ void c_vk_link::f_reconstruct_onWindowResize()
 
     p_rendering->m_pipeline.f_createRenderPass();
     p_rendering->m_pipeline.f_createGraphicsPipeline();
+    #if __CODE_START__(MSAA)
+        p_rendering->m_pipeline.f_createColorImage();
+    #endif __CODE_END__(MSAA)
     p_rendering->m_pipeline.f_createDepthImage();
     
     p_rendering->f_createFramebuffers();
@@ -223,6 +226,9 @@ void c_vk_link::f_cleanup_onWindowResize()
     p_rendering->f_reconstructCommandBuffers();
     
     p_rendering->m_pipeline.f_destroyDepthImage();
+    #if __CODE_START__(MSAA)
+        p_rendering->m_pipeline.f_destroyColorImage();
+    #endif __CODE_END__(MSAA)
     p_rendering->m_pipeline.f_destroyGraphicsPipeline();
     p_rendering->m_pipeline.f_destroyRenderPass();
 

@@ -23,10 +23,18 @@ void c_vk_rendering::f_createFramebuffers()
 
     for (t_U32 i = 0; i != m_presentation.m_swapChainImageViews.size(); ++i)
     {
-        ::std::array<VkImageView, 2> attachments = {
-            m_presentation.m_swapChainImageViews[i],
-            m_pipeline.m_depthImageView
-        };
+        #if __CODE_START__(MSAA)
+            std::array<VkImageView, 3> attachments = {
+                m_pipeline.m_colorImageView,
+                m_pipeline.m_depthImageView,
+                m_presentation.m_swapChainImageViews[i],
+            };
+        #else
+            ::std::array<VkImageView, 2> attachments = {
+                m_presentation.m_swapChainImageViews[i],
+                m_pipeline.m_depthImageView
+            };
+        #endif __CODE_END__(MSAA)
 
         VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

@@ -136,9 +136,9 @@ private_fun:
     }
     void f_generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, t_U32 mipLevels);
     void f_createImage(
-        uint32_t width, uint32_t height, t_U32 mipLevel, VkFormat format,
+        uint32_t width, uint32_t height, t_U32 mipLevel, VkSampleCountFlagBits numSamples, VkFormat format,
         VkImageTiling tiling, VkImageUsageFlags usage,
-        VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory
+        VkMemoryPropertyFlags properties, VkImage & image, VkDeviceMemory & imageMemory
     );
     void f_createTextureImageViews();
     void f_destroyTextureImageViews()

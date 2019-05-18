@@ -48,6 +48,12 @@ private_mem:
 
     VkRenderPass m_renderPass;
 
+    #if __CODE_START__(MSAA)
+        VkImage m_colorImage;
+        VkDeviceMemory m_colorImageMemory;
+        VkImageView m_colorImageView;
+    #endif __CODE_END__(MSAA)
+
     VkImage m_depthImage;
     VkDeviceMemory m_depthImageMemory;
     VkImageView m_depthImageView;
@@ -62,6 +68,17 @@ private_fun:
     //--------- render pass ---------//
     void f_createRenderPass();
     void f_destroyRenderPass(){ vkDestroyRenderPass(p_base->m_device, m_renderPass, nullptr); }
+
+    //--------- color image(MSAA) ---------//
+    #if __CODE_START__(MSAA)
+        void f_createColorImage();
+        void f_destroyColorImage()
+        {
+            vkDestroyImageView(p_base->m_device, m_colorImageView, nullptr);
+            vkDestroyImage(p_base->m_device, m_colorImage, nullptr);
+            vkFreeMemory(p_base->m_device, m_colorImageMemory, nullptr);
+        }
+    #endif __CODE_END__(MSAA)
 
     //--------- depth image ---------//
     void f_createDepthImage();

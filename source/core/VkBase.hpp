@@ -63,6 +63,10 @@ private_mem:
     VkFormat m_swapChainImageFormat;
     VkExtent2D m_swapChainExtent;
 
+    #if __CODE_START__(MSAA)
+        VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+    #endif __CODE_END__(MSAA)
+
     const char * m_vertPath;
     const char * m_fragPath;
 };

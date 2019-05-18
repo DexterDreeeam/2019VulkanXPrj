@@ -144,6 +144,10 @@ private_fun:
                 !details.presentModes.empty();
         }
     #endif __CODE_END__(DEBUG_X)
+
+    #if __CODE_START__(MSAA)
+        VkSampleCountFlagBits f_getMaxUsableSampleCount();
+    #endif __CODE_END__(MSAA)
 };
 
 _x_NS_END_

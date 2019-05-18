@@ -21,13 +21,21 @@ void c_vk_pipeline::f_createRenderPass()
 {
     VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = p_base->m_swapChainImageFormat;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        #if __CODE_START__(MSAA)
+            colorAttachment.samples = p_base->m_msaaSamples;
+        #else
+            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        #endif __CODE_END__(MSAA)
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        #if __CODE_START__(MSAA)
+            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        #else
+            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        #endif __CODE_END__(MSAA)
 
     VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = 0;
@@ -35,7 +43,11 @@ void c_vk_pipeline::f_createRenderPass()
 
     VkAttachmentDescription depthAttachment = {};
         depthAttachment.format = f_findDepthFormat();
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        #if __CODE_START__(MSAA)
+            depthAttachment.samples = p_base->m_msaaSamples;
+        #else
+            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        #endif __CODE_START__(MSAA)
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -47,11 +59,30 @@ void c_vk_pipeline::f_createRenderPass()
         depthAttachmentRef.attachment = 1;
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+    #if __CODE_START__(MSAA)
+        VkAttachmentDescription colorAttachmentResolve = {};
+            colorAttachmentResolve.format = p_base->m_swapChainImageFormat;
+            colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference colorAttachmentResolveRef = {};
+            colorAttachmentResolveRef.attachment = 2;
+            colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    #endif __CODE_END__(MSAA)
+
     VkSubpassDescription subpass = {}; //subpasses in render pass
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
         subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        #if __CODE_START__(MSAA)
+            subpass.pResolveAttachments = &colorAttachmentResolveRef;
+        #endif __CODE_END__(MSAA)
 
     VkSubpassDependency dependency = {}; //links between subpasses
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -61,7 +92,11 @@ void c_vk_pipeline::f_createRenderPass()
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-    ::std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    #if __CODE_START__(MSAA)
+        ::std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
+    #else
+        ::std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    #endif __CODE_END__(MSAA)
 
     VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -80,11 +115,51 @@ void c_vk_pipeline::f_createRenderPass()
     }
 }
 
+#if __CODE_START__(MSAA)
+    void c_vk_pipeline::f_createColorImage()
+    {
+        VkFormat colorFormat = p_base->m_swapChainImageFormat;
+
+        p_data->f_createImage(
+            p_base->m_swapChainExtent.width, 
+            p_base->m_swapChainExtent.height,
+            1, p_base->m_msaaSamples, colorFormat, 
+            VK_IMAGE_TILING_OPTIMAL, 
+            VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+            m_colorImage, m_colorImageMemory
+        );
+
+        VkImageViewCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = m_colorImage;
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = colorFormat;
+            //createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            //createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            //createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            //createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(p_base->m_device, &createInfo, nullptr, &m_colorImageView) != VK_SUCCESS)
+        {
+        #if __CODE_START__(DEBUG_X)
+            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create image views!");
+        #endif __CODE_END__(DEBUG_X)
+        }
+
+        p_data->f_transitionImageLayout(m_colorImage, colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1);
+    }
+#endif __CODE_END__(MSAA)
+
 void c_vk_pipeline::f_createDepthImage()
 {
     VkFormat depthFormat = f_findDepthFormat();
     p_data->f_createImage(
-        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 1,
+        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 1, p_base->m_msaaSamples,
         depthFormat, 
         VK_IMAGE_TILING_OPTIMAL, 
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
@@ -401,9 +476,15 @@ void c_vk_pipeline::f_createGraphicsPipeline()
 
     VkPipelineMultisampleStateCreateInfo multisampling = {};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisampling.sampleShadingEnable = VK_FALSE;
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-        multisampling.minSampleShading = 1.0f; // Optional
+        #if __CODE_START__(MSAA)
+            multisampling.rasterizationSamples = p_base->m_msaaSamples;
+            multisampling.sampleShadingEnable = VK_TRUE;
+            multisampling.minSampleShading = 0.2f;
+        #else
+            multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+            multisampling.sampleShadingEnable = VK_FALSE;
+            multisampling.minSampleShading = 1.0f; // Optional
+        #endif __CODE_END__(MSAA)
         multisampling.pSampleMask = nullptr; // Optional
         multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
         multisampling.alphaToOneEnable = VK_FALSE; // Optional

@@ -87,6 +87,8 @@
 #define __CODE_END_OF_NO_CMD__
 #define __CODE_START_OF_MIPMAP__  (__XVK_MIPMAP__ == __XVK_ENABLE__)
 #define __CODE_END_OF_MIPMAP__
+#define __CODE_START_OF_MSAA__  (__XVK_MSAA__ == __XVK_ENABLE__)
+#define __CODE_END_OF_MSAA__
 
 #define __CODE_START__(x)  __CODE_START_OF_##x##__
 #define __CODE_END__(x)  __CODE_END_OF_##x##__

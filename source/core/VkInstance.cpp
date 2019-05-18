@@ -14,6 +14,7 @@
  */
 
 #include "../core/VkInstance.hpp"
+#include <algorithm>
 
 _x_NS_START_
 
@@ -50,6 +51,9 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_rendering.m_pipeline.f_createDescriptorSetLayouts();
     m_rendering.m_pipeline.f_createPipelineLayout();
     m_rendering.m_pipeline.f_createGraphicsPipeline();
+    #if __CODE_START__(MSAA)
+        m_rendering.m_pipeline.f_createColorImage();
+    #endif __CODE_END__(MSAA)
     m_rendering.m_pipeline.f_createDepthImage();
     
     m_rendering.f_createFramebuffers();
@@ -91,6 +95,9 @@ c_vk::~c_vk()
     m_rendering.f_destroyFramebuffers();
     
     m_rendering.m_pipeline.f_destroyDepthImage();
+    #if __CODE_START__(MSAA)
+        m_rendering.m_pipeline.f_destroyColorImage();
+    #endif __CODE_END__(MSAA)
     m_rendering.m_pipeline.f_destroyGraphicsPipeline();
     m_rendering.m_pipeline.f_destroyPipelineLayout();
     m_rendering.m_pipeline.f_destroyDescriptorSetLayouts();
@@ -233,6 +240,9 @@ void c_vk::f_selectPhysicalDevice()
         if (candidates.rbegin()->first > 0) 
         {
             m_base.m_physicalDevice = candidates.rbegin()->second;
+            #if __CODE_START__(MSAA)
+                m_base.m_msaaSamples = f_getMaxUsableSampleCount();
+            #endif __CODE_END__(MSAA)
         }
         else
         {
@@ -240,6 +250,9 @@ void c_vk::f_selectPhysicalDevice()
         }
     #else
         m_base.m_physicalDevice = candidates.rbegin()->second;
+        #if __CODE_START__(MSAA)
+            m_base.m_msaaSamples = f_getMaxUsableSampleCount();
+        #endif __CODE_END__(MSAA)
     #endif __CODE_END__(DEBUG_X)
 }
 
@@ -323,6 +336,9 @@ void c_vk::f_createLogicalDevice()
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;//VK_FALSE;
+        #if __CODE_START__(MSAA)
+            deviceFeatures.sampleRateShading = VK_TRUE;
+        #endif __CODE_START__(MSAA)
 
     VkDeviceCreateInfo createInfo = {};
     {
@@ -385,5 +401,24 @@ void c_vk::f_findQueueFamilies()
 
     m_base.m_familyIndices = indices;
 }
+
+#if __CODE_START__(MSAA)
+    VkSampleCountFlagBits c_vk::f_getMaxUsableSampleCount() 
+    {
+        VkPhysicalDeviceProperties physicalDeviceProperties;
+        vkGetPhysicalDeviceProperties(m_base.m_physicalDevice, &physicalDeviceProperties);
+
+        VkSampleCountFlags counts = ::std::min(physicalDeviceProperties.limits.framebufferColorSampleCounts, physicalDeviceProperties.limits.framebufferDepthSampleCounts);
+        if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+        if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+        if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+        if (counts & VK_SAMPLE_COUNT_8_BIT)  { return VK_SAMPLE_COUNT_8_BIT; }
+        if (counts & VK_SAMPLE_COUNT_4_BIT)  { return VK_SAMPLE_COUNT_4_BIT; }
+        if (counts & VK_SAMPLE_COUNT_2_BIT)  { return VK_SAMPLE_COUNT_2_BIT; }
+
+        return VK_SAMPLE_COUNT_1_BIT;
+    }
+#endif __CODE_END__(MSAA)
+
 
 _x_NS_END_
