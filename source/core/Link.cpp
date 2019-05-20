@@ -196,14 +196,13 @@ void c_vk_link::f_reconstruct_onWindowResize()
     p_rendering->m_presentation.f_createSwapChain();
     p_rendering->m_presentation.f_createImages();
     p_rendering->m_presentation.f_createImageViews();
-
-    p_rendering->m_pipeline.f_createRenderPass();
-    p_rendering->m_pipeline.f_createGraphicsPipeline();
     #if __CODE_START__(MSAA)
-        p_rendering->m_pipeline.f_createColorImage();
+    p_rendering->m_pipeline.f_createColorImage();
     #endif __CODE_END__(MSAA)
     p_rendering->m_pipeline.f_createDepthImage();
-    
+    p_rendering->m_pipeline.f_createRenderPass();
+    p_rendering->m_pipeline.f_createGraphicsPipeline();
+        
     p_rendering->f_createFramebuffers();
 
     p_data->f_createUniformBuffer();
@@ -225,12 +224,12 @@ void c_vk_link::f_cleanup_onWindowResize()
 
     p_rendering->f_reconstructCommandBuffers();
     
-    p_rendering->m_pipeline.f_destroyDepthImage();
-    #if __CODE_START__(MSAA)
-        p_rendering->m_pipeline.f_destroyColorImage();
-    #endif __CODE_END__(MSAA)
     p_rendering->m_pipeline.f_destroyGraphicsPipeline();
     p_rendering->m_pipeline.f_destroyRenderPass();
+    p_rendering->m_pipeline.f_destroyDepthImage();
+    #if __CODE_START__(MSAA)
+    p_rendering->m_pipeline.f_destroyColorImage();
+    #endif __CODE_END__(MSAA)
 
     p_rendering->m_presentation.f_destroyImageViews();
     p_rendering->m_presentation.f_destroySwapChain();

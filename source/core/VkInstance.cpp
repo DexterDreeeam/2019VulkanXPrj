@@ -47,15 +47,15 @@ void c_vk::f_setupVk(c_vk_xdesc * vkDesc)
     m_rendering.m_presentation.f_createImages();
     m_rendering.m_presentation.f_createImageViews();
 
+    #if __CODE_START__(MSAA)
+    m_rendering.m_pipeline.f_createColorImage();
+    #endif __CODE_END__(MSAA)
+    m_rendering.m_pipeline.f_createDepthImage();
     m_rendering.m_pipeline.f_createRenderPass();
     m_rendering.m_pipeline.f_createDescriptorSetLayouts();
     m_rendering.m_pipeline.f_createPipelineLayout();
     m_rendering.m_pipeline.f_createGraphicsPipeline();
-    #if __CODE_START__(MSAA)
-        m_rendering.m_pipeline.f_createColorImage();
-    #endif __CODE_END__(MSAA)
-    m_rendering.m_pipeline.f_createDepthImage();
-    
+
     m_rendering.f_createFramebuffers();
 
     m_data.f_createVertexBuffer();
