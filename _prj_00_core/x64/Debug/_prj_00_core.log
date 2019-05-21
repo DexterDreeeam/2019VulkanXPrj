@@ -1,3 +1,4 @@
-﻿  Rendering.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
+﻿  Data.cpp
+d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(35): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_Shape”的左侧
+d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(42): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_Model”的左侧
   _prj_00_core.vcxproj -> D:\xProgramGit\2019VulkanXPrj\_lib_internal\xcore.lib

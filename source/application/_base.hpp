@@ -21,6 +21,8 @@
 #include "../core/VkInstance.hpp"
 #include "../core/EventMgr.hpp"
 
+#include <vector>
+
 _x_NS_START_
 
 class app
@@ -34,12 +36,12 @@ public_fun:
         m_mgr.f_setVk(&m_vk);
     }
 
-    void setData(const char * vertPath, const char * fragPath, const char * objPath, const char ** textures, t_U32 textureCount)
+    void setData(const char * vertPath, const char * fragPath, const char * objPath, ::std::vector<::std::vector<const char *>> & textures)
     {
         auto modelIndex = m_mgr.f_createNewModel();
         m_mgr.f_setVertShader(vertPath, modelIndex);
         m_mgr.f_setFragShader(fragPath, modelIndex);
-        m_mgr.f_setTextures(textures, textureCount, modelIndex);
+        m_mgr.f_setTextures(textures, modelIndex);
         m_mgr.f_setModel(objPath, modelIndex);
     }
 

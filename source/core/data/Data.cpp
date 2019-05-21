@@ -53,41 +53,52 @@ void c_vk_data::f_createVertexBuffer()
     VkDeviceSize vertexBufferOffset = 0;
     t_U32 vertexCount = 0;
     
+    m_vertexBuffers.resize(m_models.size());
+    m_vertexBufferMemorys.resize(m_models.size());
+    m_vertexBufferOffsets.resize(m_models.size());
+
     for(int i = 0; i != m_models.size(); ++i)
     {
-        vertexCount = static_cast<t_U32>(m_models[i].vertice.size());
-        VkDeviceSize bufferSize = sizeof(t_Vertex) * vertexCount;
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        f_createBuffer(
-            bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, //VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory
-        );
+        m_vertexBuffers[i].resize(m_models[i].shapes.size());
+        m_vertexBufferMemorys[i].resize(m_models[i].shapes.size());
+        m_vertexBufferOffsets[i].resize(m_models[i].shapes.size());
 
-        void * data;
-        vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, m_models[i].vertice.data(), (size_t)bufferSize);
-        vkUnmapMemory(p_base->m_device, stagingBufferMemory);
+        for(int j = 0; j != m_models[i].shapes.size(); ++j)
+        {
+            vertexCount = static_cast<t_U32>(m_models[i].shapes[j].vertice.size());
+            VkDeviceSize bufferSize = sizeof(t_Vertex) * vertexCount;
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
+            f_createBuffer(
+                bufferSize,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT, //VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                stagingBuffer,
+                stagingBufferMemory
+            );
 
-        f_createBuffer(
-            bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            vertexBuffer,
-            vertexBufferMemory
-        );
+            void * data;
+            vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, m_models[i].shapes[j].vertice.data(), (size_t)bufferSize);
+            vkUnmapMemory(p_base->m_device, stagingBufferMemory);
 
-        f_copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+            f_createBuffer(
+                bufferSize,
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                vertexBuffer,
+                vertexBufferMemory
+            );
 
-        vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
-        vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
+            f_copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-        m_vertexBuffers.push_back(vertexBuffer);
-        m_vertexBufferMemorys.push_back(vertexBufferMemory);
-        m_vertexBufferOffsets.push_back(vertexBufferOffset);
+            vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
+            vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
+
+            m_vertexBuffers[i][j] = vertexBuffer;
+            m_vertexBufferMemorys[i][j] = vertexBufferMemory;
+            m_vertexBufferOffsets[i][j] = vertexBufferOffset;
+        }
     }
 }
 
@@ -96,44 +107,53 @@ void c_vk_data::f_createIndexBuffer()
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
     VkDeviceSize indexBufferOffset = 0;
+
+    m_indexBuffers.resize(m_models.size());
+    m_indexBufferMemorys.resize(m_models.size());
+    m_indexBufferOffsets.resize(m_models.size());
     
     for (int i = 0; i != m_models.size(); ++i)
     {
-        VkDeviceSize bufferSize = sizeof(t_U32) * m_models[i].indice.size();
-        t_U32 points = m_models[i].indice.size();
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
+        m_indexBuffers[i].resize(m_models[i].shapes.size());
+        m_indexBufferMemorys[i].resize(m_models[i].shapes.size());
+        m_indexBufferOffsets[i].resize(m_models[i].shapes.size());
 
-        f_createBuffer(
-            bufferSize, 
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-            stagingBuffer, 
-            stagingBufferMemory
-        );
+        for(int j = 0; j != m_models[i].shapes.size(); ++j)
+        {
+            VkDeviceSize bufferSize = sizeof(t_U32) * m_models[i].shapes[j].indice.size();
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
 
-        void * data;
-        vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, m_models[i].indice.data(), (size_t)bufferSize);
-        vkUnmapMemory(p_base->m_device, stagingBufferMemory);
+            f_createBuffer(
+                bufferSize, 
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                stagingBuffer, 
+                stagingBufferMemory
+            );
 
-        f_createBuffer(
-            bufferSize, 
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-            indexBuffer, 
-            indexBufferMemory
-        );
+            void * data;
+            vkMapMemory(p_base->m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, m_models[i].shapes[j].indice.data(), (size_t)bufferSize);
+            vkUnmapMemory(p_base->m_device, stagingBufferMemory);
 
-        f_copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+            f_createBuffer(
+                bufferSize, 
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+                indexBuffer, 
+                indexBufferMemory
+            );
 
-        vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
-        vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
+            f_copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
-        m_indexBuffers.push_back(indexBuffer);
-        m_indexBufferMemorys.push_back(indexBufferMemory);
-        m_indexBufferOffsets.push_back(indexBufferOffset);
-        m_pointNumbers.push_back(points);
+            vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
+            vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
+
+            m_indexBuffers[i][j] = indexBuffer;
+            m_indexBufferMemorys[i][j] = indexBufferMemory;
+            m_indexBufferOffsets[i][j] = indexBufferOffset;
+        }
     }
 }
 
@@ -144,15 +164,21 @@ void c_vk_data::f_createUniformBuffer()
     m_uniformBuffers.resize(m_models.size());//p_base->m_imageCount);
     m_uniformBufferMemorys.resize(m_models.size());//p_base->m_imageCount);
 
-    for (size_t i = 0; i != m_models.size()/*p_base->m_imageCount*/; ++i)
+    for (int i = 0; i != m_models.size()/*p_base->m_imageCount*/; ++i)
     {
-        f_createBuffer(
-            bufferSize, 
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-            m_uniformBuffers[i], 
-            m_uniformBufferMemorys[i]
-        );
+        m_uniformBuffers[i].resize(m_models[i].shapes.size());
+        m_uniformBufferMemorys[i].resize(m_models[i].shapes.size());
+
+        for(int j = 0; j != m_models[i].shapes.size(); ++j)
+        {
+            f_createBuffer(
+                bufferSize,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                m_uniformBuffers[i][j],
+                m_uniformBufferMemorys[i][j]
+            );
+        }
     }
 }
 
@@ -165,97 +191,108 @@ void c_vk_data::f_updateUniformBuffer(/*t_U32 currentImage*/)
     vkUnmapMemory(p_base->m_device, m_uniformBufferMemorys[currentImage]);
     */
 
-    for(t_U32 i = 0; i != m_models.size(); ++i)
+    for(int i = 0; i != m_models.size(); ++i)
     {
-        void * data;
-        vkMapMemory(p_base->m_device, m_uniformBufferMemorys[i], 0, sizeof(UniformBufferObject), 0, &data);
-            memcpy(data, &(m_uniformObjs[i]), sizeof(UniformBufferObject));
-        vkUnmapMemory(p_base->m_device, m_uniformBufferMemorys[i]);
+        for(int j = 0; j != m_models[i].shapes.size(); ++j)
+        {
+            void * data;
+            vkMapMemory(p_base->m_device, m_uniformBufferMemorys[i][j], 0, sizeof(UniformBufferObject), 0, &data);
+                memcpy(data, &(m_uniformObjs[i][j]), sizeof(UniformBufferObject));
+            vkUnmapMemory(p_base->m_device, m_uniformBufferMemorys[i][j]);
+        }
     }
 }
 
 void c_vk_data::f_createTextureImage()
 {
+    m_textureImages.resize(m_models.size());
+    m_textureImageMemorys.resize(m_models.size());
+
     for(int i = 0; i != m_models.size(); ++i)
     {
-        ::std::vector<VkImage> vImages;
-        ::std::vector<VkDeviceMemory> vImageMemorys;
+        m_textureImages[i].resize(m_models[i].shapes.size());
+        m_textureImageMemorys[i].resize(m_models[i].shapes.size());
 
-        for(int j = 0; j != m_models[i].textures.size(); ++j)
+        for(int j = 0; j != m_models[i].shapes.size(); ++j)
         {
-            int texWidth, texHeight, texChannels;
-            stbi_uc* pixels = stbi_load(m_models[i].textures[j], &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-            VkDeviceSize imageSize = texWidth * texHeight * 4;
-            
-            if (!pixels)
+            m_textureImages[i][j].resize(m_models[i].shapes[j].textures.size());
+            m_textureImageMemorys[i][j].resize(m_models[i].shapes[j].textures.size());
+
+            for(int k = 0; k != m_models[i].shapes[j].textures.size(); ++k)
             {
-            #if __CODE_START__(DEBUG_X)
-                throw ::std::runtime_error("<_appData.cpp> failed to load texture image!");
-            #endif __CODE_START__(DEBUG_X)
-            }
+                int texWidth, texHeight, texChannels;
+                stbi_uc * pixels = stbi_load(m_models[i].shapes[j].textures[k], &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+                VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-            #if __CODE_START__(MIPMAP)
+                if (!pixels)
+                {
+                    #if __CODE_START__(DEBUG_X)
+                    throw ::std::runtime_error("<_appData.cpp> failed to load texture image!");
+                    #endif __CODE_START__(DEBUG_X)
+                }
+
+                #if __CODE_START__(MIPMAP)
                 m_mipLevel = ::std::min(m_mipLevel, static_cast<uint32_t>(::std::floor(::std::log2(::std::max(texWidth, texHeight)))) + 1);
-            #endif __CODE_END__(MIPMAP)
-
-            VkBuffer stagingBuffer;
-            VkDeviceMemory stagingBufferMemory;
-            f_createBuffer(
-                imageSize,
-                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                stagingBuffer,
-                stagingBufferMemory
-            );
-
-            void * data;
-            vkMapMemory(p_base->m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-                memcpy(data, pixels, static_cast<size_t>(imageSize));
-            vkUnmapMemory(p_base->m_device, stagingBufferMemory);
-
-            stbi_image_free(pixels);
-
-            VkImage textureImage;
-            VkDeviceMemory textureImageMemory;
-            f_createImage(
-                texWidth, texHeight, 
-                #if __CODE_START__(MIPMAP)
-                    m_mipLevel,
-                #else
-                    1,
                 #endif __CODE_END__(MIPMAP)
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_FORMAT_R8G8B8A8_UNORM, 
-                VK_IMAGE_TILING_OPTIMAL, 
-                #if __CODE_START__(MIPMAP)
-                    VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                #else
-                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                #endif __CODE_END__(MIPMAP)
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-                textureImage, textureImageMemory
-            );
 
-            f_transitionImageLayout(
-                textureImage, 
-                VK_FORMAT_R8G8B8A8_UNORM, 
-                VK_IMAGE_LAYOUT_UNDEFINED, 
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                #if __CODE_START__(MIPMAP)
-                    m_mipLevel
-                #else
-                    1
-                #endif __CODE_END__(MIPMAP)
-            );
-            f_copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-            
-            #if __CODE_START__(MIPMAP)
-                f_generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, m_mipLevel);
-            #else
+                VkBuffer stagingBuffer;
+                VkDeviceMemory stagingBufferMemory;
+                f_createBuffer(
+                    imageSize,
+                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    stagingBuffer,
+                    stagingBufferMemory
+                );
+
+                void * data;
+                vkMapMemory(p_base->m_device, stagingBufferMemory, 0, imageSize, 0, &data);
+                    memcpy(data, pixels, static_cast<size_t>(imageSize));
+                vkUnmapMemory(p_base->m_device, stagingBufferMemory);
+
+                stbi_image_free(pixels);
+
+                VkImage textureImage;
+                VkDeviceMemory textureImageMemory;
+                f_createImage(
+                    texWidth, texHeight,
+                    #if __CODE_START__(MIPMAP)
+                        m_mipLevel,
+                    #else
+                        1,
+                    #endif __CODE_END__(MIPMAP)
+                    VK_SAMPLE_COUNT_1_BIT,
+                    VK_FORMAT_R8G8B8A8_UNORM,
+                    VK_IMAGE_TILING_OPTIMAL,
+                    #if __CODE_START__(MIPMAP)
+                        VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                    #else
+                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                    #endif __CODE_END__(MIPMAP)
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                    textureImage, textureImageMemory
+                );
+
                 f_transitionImageLayout(
-                    textureImage, 
-                    VK_FORMAT_R8G8B8A8_UNORM, 
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+                    textureImage,
+                    VK_FORMAT_R8G8B8A8_UNORM,
+                    VK_IMAGE_LAYOUT_UNDEFINED,
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    #if __CODE_START__(MIPMAP)
+                        m_mipLevel
+                    #else
+                        1
+                    #endif __CODE_END__(MIPMAP)
+                );
+                f_copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+
+                #if __CODE_START__(MIPMAP)
+                f_generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, m_mipLevel);
+                #else
+                f_transitionImageLayout(
+                    textureImage,
+                    VK_FORMAT_R8G8B8A8_UNORM,
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                     #if __CODE_START__(MIPMAP)
                         m_mipLevel
@@ -263,17 +300,15 @@ void c_vk_data::f_createTextureImage()
                         1
                     #endif __CODE_END__(MIPMAP)
                 );
-            #endif __CODE_START__(MIPMAP)
+                #endif __CODE_START__(MIPMAP)
 
-            vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
-            vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
+                vkDestroyBuffer(p_base->m_device, stagingBuffer, nullptr);
+                vkFreeMemory(p_base->m_device, stagingBufferMemory, nullptr);
 
-            vImages.push_back(textureImage);
-            vImageMemorys.push_back(textureImageMemory);
+                m_textureImages[i][j][k] = textureImage;
+                m_textureImageMemorys[i][j][k] = textureImageMemory;
+            }
         }
-
-        m_textureImages.push_back(vImages);
-        m_textureImageMemorys.push_back(vImageMemorys); 
     }
 }
 
@@ -434,29 +469,36 @@ void c_vk_data::f_createTextureImageViews()
     for(int i = 0; i != m_textureImages.size(); ++i)
     {
         m_textureImageViews[i].resize(m_textureImages[i].size());
+
         for(int j = 0; j != m_textureImages[i].size(); ++j)
         {
-            VkImageViewCreateInfo viewInfo = {};
-                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                viewInfo.image = m_textureImages[i][j];
-                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                viewInfo.subresourceRange.baseMipLevel = 0;
-                #if __CODE_START__(MIPMAP)
-                    viewInfo.subresourceRange.levelCount = m_mipLevel;
-                #else
-                    viewInfo.subresourceRange.levelCount = 1;
-                #endif __CODE_END__(MIPMAP)
-                viewInfo.subresourceRange.baseArrayLayer = 0;
-                viewInfo.subresourceRange.layerCount = 1;
+            m_textureImageViews[i][j].resize(m_textureImages[i][j].size());
 
-            if (vkCreateImageView(p_base->m_device, &viewInfo, nullptr, &(m_textureImageViews[i][j])) != VK_SUCCESS)
+            for(int k = 0; k != m_textureImages[i][j].size(); ++k)
             {
-            #if __CODE_START__(DEBUG_X)
-                throw ::std::runtime_error("<_appData.cpp> Failed to create texture image view!");
-            #endif __CODE_START__(DEBUG_X)
+                VkImageViewCreateInfo viewInfo = {};
+                    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                    viewInfo.image = m_textureImages[i][j][k];
+                    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                    viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+                    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    viewInfo.subresourceRange.baseMipLevel = 0;
+                    #if __CODE_START__(MIPMAP)
+                    viewInfo.subresourceRange.levelCount = m_mipLevel;
+                    #else
+                    viewInfo.subresourceRange.levelCount = 1;
+                    #endif __CODE_END__(MIPMAP)
+                    viewInfo.subresourceRange.baseArrayLayer = 0;
+                    viewInfo.subresourceRange.layerCount = 1;
+
+                if (vkCreateImageView(p_base->m_device, &viewInfo, nullptr, &(m_textureImageViews[i][j][k])) != VK_SUCCESS)
+                {
+                    #if __CODE_START__(DEBUG_X)
+                    throw ::std::runtime_error("<_appData.cpp> Failed to create texture image view!");
+                    #endif __CODE_START__(DEBUG_X)
+                }
             }
+
         }
     }
 }
@@ -468,35 +510,41 @@ void c_vk_data::f_createTextureSamplers()
     for(int i = 0; i != m_textureImages.size(); ++i)
     {
         m_textureSamplers[i].resize(m_textureImages[i].size());
+        
         for(int j = 0; j != m_textureImages[i].size(); ++j)
         {
-            VkSamplerCreateInfo samplerInfo = {};
-                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                samplerInfo.magFilter = VK_FILTER_LINEAR;
-                samplerInfo.minFilter = VK_FILTER_LINEAR;
-                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.anisotropyEnable = VK_TRUE; //VK_FALSE;
-                samplerInfo.maxAnisotropy = 16; //1;
-                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-                samplerInfo.unnormalizedCoordinates = VK_FALSE;
-                samplerInfo.compareEnable = VK_FALSE;
-                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                samplerInfo.mipLodBias = 0.0f;
-                samplerInfo.minLod = 0.0f;
-                #if __CODE_START__(MIPMAP)
-                    samplerInfo.maxLod = static_cast<t_F32>(m_mipLevel);
-                #else
-                    samplerInfo.maxLod = 0.0f;
-                #endif __CODE_START__(MIPMAP)
+            m_textureSamplers[i][j].resize(m_textureImages[i][j].size());
 
-            if (vkCreateSampler(p_base->m_device, &samplerInfo, nullptr, &m_textureSamplers[i][j]) != VK_SUCCESS)
+            for(int k = 0; k != m_textureImages[i][j].size(); ++k)
             {
-            #if __CODE_START__(DEBUG_X)
-                throw ::std::runtime_error("<_appData.cpp> Failed to create texture sampler!");
-            #endif __CODE_START__(DEBUG_X)
+                VkSamplerCreateInfo samplerInfo = {};
+                    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                    samplerInfo.magFilter = VK_FILTER_LINEAR;
+                    samplerInfo.minFilter = VK_FILTER_LINEAR;
+                    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                    samplerInfo.anisotropyEnable = VK_TRUE; //VK_FALSE;
+                    samplerInfo.maxAnisotropy = 16; //1;
+                    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+                    samplerInfo.compareEnable = VK_FALSE;
+                    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                    samplerInfo.mipLodBias = 0.0f;
+                    samplerInfo.minLod = 0.0f;
+                    #if __CODE_START__(MIPMAP)
+                    samplerInfo.maxLod = static_cast<t_F32>(m_mipLevel);
+                    #else
+                    samplerInfo.maxLod = 0.0f;
+                    #endif __CODE_START__(MIPMAP)
+
+                if (vkCreateSampler(p_base->m_device, &samplerInfo, nullptr, &(m_textureSamplers[i][j][k])) != VK_SUCCESS)
+                {
+                    #if __CODE_START__(DEBUG_X)
+                    throw ::std::runtime_error("<_appData.cpp> Failed to create texture sampler!");
+                    #endif __CODE_START__(DEBUG_X)
+                }
             }
         }
     }

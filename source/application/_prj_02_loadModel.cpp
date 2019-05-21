@@ -30,14 +30,20 @@ int main()
     {
         app * pApp = new x_NS::_prj_02_loadModel;
 
-        const char * texturePaths[] = { "../model/chalet/chalet.jpg" };
+        ::std::vector<::std::vector<const char *>> texturePaths =
+        {
+            {
+                "../model/chalet/chalet.jpg",
+            },
+        };
         pApp->initApp();
         pApp->setData(
             "../shader_spv/_prj_p02_loadModel_vert.spv", 
             "../shader_spv/_prj_p02_loadModel_frag.spv",
             "../model/chalet/chalet.obj",
-            texturePaths, 1
+            texturePaths
         );
+
         pApp->initVulkan(800, 600, "_prj_p02_loadModel");
         pApp->mainLoop();
         pApp->cleanup();

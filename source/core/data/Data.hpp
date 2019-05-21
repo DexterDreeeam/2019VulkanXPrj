@@ -63,37 +63,39 @@ private_mem:
         t_U32 m_mipLevel;
     #endif __CODE_START__(MIPMAP)
 
-    ::std::vector<VkBuffer> m_vertexBuffers;
-    ::std::vector<VkDeviceMemory> m_vertexBufferMemorys;
-    ::std::vector<VkDeviceSize> m_vertexBufferOffsets;
+    ::std::vector<::std::vector<VkBuffer>> m_vertexBuffers;
+    ::std::vector<::std::vector<VkDeviceMemory>> m_vertexBufferMemorys;
+    ::std::vector<::std::vector<VkDeviceSize>> m_vertexBufferOffsets;
 
-    ::std::vector<VkBuffer> m_indexBuffers;
-    ::std::vector<VkDeviceMemory> m_indexBufferMemorys;
-    ::std::vector<VkDeviceSize> m_indexBufferOffsets;
+    ::std::vector<::std::vector<VkBuffer>> m_indexBuffers;
+    ::std::vector<::std::vector<VkDeviceMemory>> m_indexBufferMemorys;
+    ::std::vector<::std::vector<VkDeviceSize>> m_indexBufferOffsets;
 
-    ::std::vector<VkBuffer> m_uniformBuffers;
-    ::std::vector<VkDeviceMemory> m_uniformBufferMemorys;
-    ::std::vector<UniformBufferObject> m_uniformObjs;
+    ::std::vector<::std::vector<VkBuffer>> m_uniformBuffers;
+    ::std::vector<::std::vector<VkDeviceMemory>> m_uniformBufferMemorys;
+    ::std::vector<::std::vector<UniformBufferObject>> m_uniformObjs;
 
-    ::std::vector<::std::vector<VkImage>> m_textureImages;
-    ::std::vector<::std::vector<VkDeviceMemory>> m_textureImageMemorys;
-    ::std::vector<::std::vector<VkImageView>> m_textureImageViews;
-    ::std::vector<::std::vector<VkSampler>> m_textureSamplers;
+    ::std::vector<::std::vector<::std::vector<VkImage>>> m_textureImages;
+    ::std::vector<::std::vector<::std::vector<VkDeviceMemory>>> m_textureImageMemorys;
+    ::std::vector<::std::vector<::std::vector<VkImageView>>> m_textureImageViews;
+    ::std::vector<::std::vector<::std::vector<VkSampler>>> m_textureSamplers;
 
+    ::std::vector<c_vk_model::t_Model> m_models;
 
-    ::std::vector<t_U32> m_pointNumbers;
-
-    ::std::vector<c_vk_model::t_model> m_models;
+    t_U32 m_shapesCount = 0;
 
 private_fun:
     //--------- vertex buffer ---------//
     void f_createVertexBuffer();
     void f_destroyVertexBuffer()
     {
-        for(t_U32 i = 0; i != m_vertexBuffers.size(); ++i)
+        for(int i = 0; i != m_vertexBuffers.size(); ++i)
         {
-            vkFreeMemory(p_base->m_device, m_vertexBufferMemorys[i], nullptr);
-            vkDestroyBuffer(p_base->m_device, m_vertexBuffers[i], nullptr);
+            for(int j = 0; j != m_vertexBuffers[i].size(); ++j)
+            {
+                vkFreeMemory(p_base->m_device, m_vertexBufferMemorys[i][j], nullptr);
+                vkDestroyBuffer(p_base->m_device, m_vertexBuffers[i][j], nullptr);
+            }
         }
     }
 
@@ -101,22 +103,35 @@ private_fun:
     void f_createIndexBuffer();
     void f_destroyIndexBuffer()
     {
-        for (t_U32 i = 0; i != m_indexBuffers.size(); ++i)
+        for (int i = 0; i != m_indexBuffers.size(); ++i)
         {
-            vkFreeMemory(p_base->m_device, m_indexBufferMemorys[i], nullptr);
-            vkDestroyBuffer(p_base->m_device, m_indexBuffers[i], nullptr);
+            for(int j = 0; j != m_indexBuffers[i].size(); ++j)
+            {
+                vkFreeMemory(p_base->m_device, m_indexBufferMemorys[i][j], nullptr);
+                vkDestroyBuffer(p_base->m_device, m_indexBuffers[i][j], nullptr);
+            }
         }
     }
 
     //--------- uniform buffer ---------//
-    void f_createUniformObjs() { m_uniformObjs.resize(m_models.size()); }
+    void f_createUniformObjs() 
+    {
+        m_uniformObjs.resize(m_models.size());
+        for(int i = 0; i != m_models.size(); ++i)
+        {
+            m_uniformObjs[i].resize(m_models[i].shapes.size());
+        }
+    }
     void f_createUniformBuffer();
     void f_destroyUniformBuffer()
     {
-        for (size_t i = 0; i != m_uniformBuffers.size()/*p_base->m_imageCount*/; ++i)
+        for (int i = 0; i != m_uniformBuffers.size()/*p_base->m_imageCount*/; ++i)
         {
-            vkDestroyBuffer(p_base->m_device, m_uniformBuffers[i], nullptr);
-            vkFreeMemory(p_base->m_device, m_uniformBufferMemorys[i], nullptr);
+            for(int j = 0; j != m_uniformBuffers[i].size(); ++j)
+            {
+                vkDestroyBuffer(p_base->m_device, m_uniformBuffers[i][j], nullptr);
+                vkFreeMemory(p_base->m_device, m_uniformBufferMemorys[i][j], nullptr);
+            }
         }
     }
     void f_updateUniformBuffer(/*t_U32 currentImage*/);
@@ -129,8 +144,11 @@ private_fun:
         {
             for(int j = 0; j != m_textureImages[i].size(); ++j)
             {
-                vkDestroyImage(p_base->m_device, m_textureImages[i][j], nullptr);
-                vkFreeMemory(p_base->m_device, m_textureImageMemorys[i][j], nullptr);
+                for(int k = 0; k != m_textureImages[i][j].size(); ++k)
+                {
+                    vkDestroyImage(p_base->m_device, m_textureImages[i][j][k], nullptr);
+                    vkFreeMemory(p_base->m_device, m_textureImageMemorys[i][j][k], nullptr);
+                }
             }
         }
     }
@@ -143,22 +161,28 @@ private_fun:
     void f_createTextureImageViews();
     void f_destroyTextureImageViews()
     {
-        for(auto & vImageViews : m_textureImageViews)
+        for(auto & vvImageViews : m_textureImageViews)
         {
-            for(auto & imageView : vImageViews)
+            for(auto & vImageViews : vvImageViews)
             {
-                vkDestroyImageView(p_base->m_device, imageView, nullptr);
+                for(auto & imageView : vImageViews)
+                {
+                    vkDestroyImageView(p_base->m_device, imageView, nullptr);
+                }
             }
         }
     }
     void f_createTextureSamplers();
     void f_destroyTextureSamplers() 
     {
-        for (auto & vTextureSampler : m_textureSamplers)
+        for (auto & vvTextureSamplers : m_textureSamplers)
         {
-            for (auto & textureSampler : vTextureSampler)
+            for (auto & vTextureSamplers : vvTextureSamplers)
             {
-                vkDestroySampler(p_base->m_device, textureSampler, nullptr);
+                for(auto & textureSampler : vTextureSamplers)
+                {
+                    vkDestroySampler(p_base->m_device, textureSampler, nullptr);
+                }
             }
         }
     }

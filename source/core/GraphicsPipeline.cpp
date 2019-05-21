@@ -159,7 +159,12 @@ void c_vk_pipeline::f_createDepthImage()
 {
     VkFormat depthFormat = f_findDepthFormat();
     p_data->f_createImage(
-        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 1, p_base->m_msaaSamples,
+        p_base->m_swapChainExtent.width, p_base->m_swapChainExtent.height, 1, 
+        #if __CODE_START__(MSAA)
+        p_base->m_msaaSamples,
+        #else
+        VK_SAMPLE_COUNT_1_BIT,
+        #endif __CODE_START__(MSAA)
         depthFormat, 
         VK_IMAGE_TILING_OPTIMAL, 
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
@@ -195,40 +200,41 @@ void c_vk_pipeline::f_createDepthImage()
 
 void c_vk_pipeline::f_createDescriptorSetLayouts() 
 {
-    m_descriptorSetLayouts.resize(p_data->m_models.size());
+    m_descriptorSetLayouts.resize(p_data->m_shapesCount);
 
     for(int i = 0; i != p_data->m_models.size(); ++i)
     {
-        ::std::vector<VkDescriptorSetLayoutBinding> bindings;
-
-        VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-            uboLayoutBinding.binding = 0;
-            uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            uboLayoutBinding.descriptorCount = 1;
-            uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-            uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-        bindings.push_back(uboLayoutBinding);
-
-        for(int j = 0; j != p_data->m_models[i].textures.size(); ++j)
+        for(int j = 0; j != p_data->m_models[i].shapes.size(); ++j)
         {
-            VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-                samplerLayoutBinding.binding = 1;
-                samplerLayoutBinding.descriptorCount = 1;
-                samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                samplerLayoutBinding.pImmutableSamplers = nullptr;
-                samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-            bindings.push_back(samplerLayoutBinding);
-        }
+            ::std::vector<VkDescriptorSetLayoutBinding> bindings;
+            VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+                uboLayoutBinding.binding = 0;
+                uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                uboLayoutBinding.descriptorCount = 1;
+                uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+            bindings.push_back(uboLayoutBinding);
 
-        VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-            layoutInfo.pBindings = bindings.data();
-        if (vkCreateDescriptorSetLayout(p_base->m_device, &layoutInfo, nullptr, &m_descriptorSetLayouts[i]) != VK_SUCCESS)
-        {
-        #if __CODE_START__(DEBUG_X)
-            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor set layout!");
-        #endif __CODE_END__(DEBUG_X)
+            for(int k = 0; k != p_data->m_models[i].shapes[j].textures.size(); ++k)
+            {
+                VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+                    samplerLayoutBinding.binding = 1;
+                    samplerLayoutBinding.descriptorCount = 1;
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                bindings.push_back(samplerLayoutBinding);
+            }
+            VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+                layoutInfo.pBindings = bindings.data();
+            if (vkCreateDescriptorSetLayout(p_base->m_device, &layoutInfo, nullptr, &m_descriptorSetLayouts[p_data->m_models[i].shapes[j].id]) != VK_SUCCESS)
+            {
+                #if __CODE_START__(DEBUG_X)
+                throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor set layout!");
+                #endif __CODE_END__(DEBUG_X)
+            }
         }
     }
 }
@@ -257,61 +263,109 @@ void c_vk_pipeline::f_createDescriptorPools()
     //#endif __CODE_END__(DEBUG_X)
     //}
 
-    m_descriptorPools.resize(p_data->m_models.size());
+    m_descriptorPools.resize(p_data->m_shapesCount);
 
     for (int i = 0; i != p_data->m_models.size(); ++i)
     {
-        ::std::vector<VkDescriptorPoolSize> poolSizes = {};
-        VkDescriptorPoolSize poolSize;
-        
-        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
-        poolSizes.push_back(poolSize);
-
-        for(int j = 0; j != p_data->m_models.size(); ++j)
+        for(int j = 0; j != p_data->m_models[i].shapes.size(); ++j)
         {
-            poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            poolSize.descriptorCount = static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
+            ::std::vector<VkDescriptorPoolSize> poolSizes = {};
+            VkDescriptorPoolSize poolSize;
+
+            poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            poolSize.descriptorCount = 1;//static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
             poolSizes.push_back(poolSize);
+
+            for(int k = 0; k != p_data->m_models[i].shapes[j].textures.size(); ++k)
+            {
+                poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                poolSize.descriptorCount = 1;//static_cast<uint32_t>(p_base->m_imageCount); //swapChainImages.size());
+                poolSizes.push_back(poolSize);
+            }
+
+            VkDescriptorPoolCreateInfo poolInfo = {};
+                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                poolInfo.pPoolSizes = poolSizes.data();
+                poolInfo.maxSets = 1;//static_cast<uint32_t>(p_base->m_imageCount);
+
+            if (vkCreateDescriptorPool(p_base->m_device, &poolInfo, nullptr, &(m_descriptorPools[p_data->m_models[i].shapes[j].id])) != VK_SUCCESS)
+            {
+                #if __CODE_START__(DEBUG_X)
+                throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor pool!");
+                #endif __CODE_END__(DEBUG_X)
+            }
         }
-
-        VkDescriptorPoolCreateInfo poolInfo = {};
-            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-            poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-            poolInfo.pPoolSizes = poolSizes.data();
-            poolInfo.maxSets = static_cast<uint32_t>(p_base->m_imageCount);
-
-        if (vkCreateDescriptorPool(p_base->m_device, &poolInfo, nullptr, &m_descriptorPools[i]) != VK_SUCCESS)
-        {
-        #if __CODE_START__(DEBUG_X)
-            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to create descriptor pool!");
-        #endif __CODE_END__(DEBUG_X)
-        }
-
     }
 }
 
 void c_vk_pipeline::f_createDescriptorSets()
 {
-    m_descriptorSets.resize(p_data->m_models.size());
+    m_descriptorSets.resize(p_data->m_shapesCount);
 
     for(int i = 0; i != p_data->m_models.size(); ++i)
     {
-        VkDescriptorSetLayout layouts[] = { m_descriptorSetLayouts[i] };
-        VkDescriptorSetAllocateInfo allocInfo = {};
-            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.descriptorPool = m_descriptorPools[i];
-            allocInfo.descriptorSetCount = 1;
-            allocInfo.pSetLayouts = layouts;
-
-        if (vkAllocateDescriptorSets(p_base->m_device, &allocInfo, &m_descriptorSets[i]) != VK_SUCCESS)
+        for(int j = 0; j != p_data->m_models[i].shapes.size(); ++j)
         {
-        #if __CODE_START__(DEBUG_X)
-            throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to allocate descriptor sets!");
-        #endif __CODE_END__(DEBUG_X)
+            VkDescriptorSetLayout layouts[] = { m_descriptorSetLayouts[p_data->m_models[i].shapes[j].id] };
+            VkDescriptorSetAllocateInfo allocInfo = {};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.descriptorPool = m_descriptorPools[p_data->m_models[i].shapes[j].id];
+                allocInfo.descriptorSetCount = 1;
+                allocInfo.pSetLayouts = layouts;
+
+            if (vkAllocateDescriptorSets(p_base->m_device, &allocInfo, &m_descriptorSets[p_data->m_models[i].shapes[j].id]) != VK_SUCCESS)
+            {
+                #if __CODE_START__(DEBUG_X)
+                throw ::std::runtime_error("<GraphicsPipeline.cpp> Failed to allocate descriptor sets!");
+                #endif __CODE_END__(DEBUG_X)
+            }
+
+            ::std::vector<VkWriteDescriptorSet> descriptorWrites;
+            {
+                VkWriteDescriptorSet descriptorWrite;
+                VkDescriptorBufferInfo bufferInfo = {};
+                    bufferInfo.buffer = p_data->m_uniformBuffers[i][j];
+                    bufferInfo.offset = 0;
+                    bufferInfo.range = sizeof(c_vk_data::UniformBufferObject);
+
+                descriptorWrite.pNext = nullptr;
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = m_descriptorSets[p_data->m_models[i].shapes[j].id];
+                descriptorWrite.dstBinding = 0;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pBufferInfo = &bufferInfo;
+                descriptorWrite.pImageInfo = nullptr;
+
+                descriptorWrites.push_back(descriptorWrite);
+            }
+
+            //::std::vector<VkDescriptorImageInfo> imageInfos(p_data->m_models[i].shapes[j].textures.size());
+            for (int k = 0; k != p_data->m_models[i].shapes[j].textures.size(); ++k)
+            {
+                VkWriteDescriptorSet descriptorWrite;
+                VkDescriptorImageInfo imageInfo;
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageView = p_data->m_textureImageViews[i][j][k];
+                    imageInfo.sampler = p_data->m_textureSamplers[i][j][k];
+
+                descriptorWrite.pNext = nullptr;
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = m_descriptorSets[p_data->m_models[i].shapes[j].id];
+                descriptorWrite.dstBinding = k + 1;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrite.descriptorCount = 1;//p_data->m_models[i].shapes[j].textures.size();
+                descriptorWrite.pBufferInfo = nullptr;
+                descriptorWrite.pImageInfo = &imageInfo;//imageInfos.data();
+
+                descriptorWrites.push_back(descriptorWrite);
+            }
+            vkUpdateDescriptorSets(p_base->m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
     }
-
 
     /*
     for (size_t i = 0; i != p_base->m_imageCount; ++i)
@@ -335,43 +389,6 @@ void c_vk_pipeline::f_createDescriptorSets()
         vkUpdateDescriptorSets(p_base->m_device, 1, &descriptorWrite, 0, nullptr);
     }
     */
-
-    for(int i = 0; i != p_data->m_models.size(); ++i)
-    {
-        VkDescriptorBufferInfo bufferInfo = {};
-            bufferInfo.buffer = p_data->m_uniformBuffers[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(c_vk_data::UniformBufferObject);
-        
-        ::std::vector<VkDescriptorImageInfo> imageInfos(p_data->m_textureImages[i].size());
-        for(int j = 0; j != p_data->m_models[i].textures.size(); ++j)
-        {
-            imageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfos[j].imageView = p_data->m_textureImageViews[i][j];
-            imageInfos[j].sampler = p_data->m_textureSamplers[i][j];
-        }
-
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = m_descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = m_descriptorSets[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = p_data->m_textureImages[i].size();
-        descriptorWrites[1].pImageInfo = imageInfos.data();
-
-        vkUpdateDescriptorSets(p_base->m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
-
 }
 
 void c_vk_pipeline::f_createPipelineLayout()

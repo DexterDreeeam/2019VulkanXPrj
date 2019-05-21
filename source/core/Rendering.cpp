@@ -117,37 +117,40 @@ void c_vk_rendering::f_createCommandBuffers()
             
         for(int j = 0; j != p_data->m_models.size(); ++j)
         {
-            vkCmdBindVertexBuffers(
-                m_commandBuffers[i],
-                0,
-                1,
-                &(p_data->m_vertexBuffers[j]),
-                &(p_data->m_vertexBufferOffsets[j])
-            ); //vertice
-            vkCmdBindIndexBuffer(
-                m_commandBuffers[i],
-                p_data->m_indexBuffers[j],
-                p_data->m_indexBufferOffsets[j],
-                VK_INDEX_TYPE_UINT32//VK_INDEX_TYPE_UINT16
-            ); //indice
-            vkCmdBindDescriptorSets(
-                m_commandBuffers[i],
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_pipeline.m_pipelineLayout,
-                0,
-                1,
-                &(m_pipeline.m_descriptorSets[j]/*i]*/),
-                0,
-                nullptr
-            ); //uniform
-            vkCmdDrawIndexed( //vkCmdDraw
-                m_commandBuffers[i],
-                p_data->m_pointNumbers[j],
-                1,
-                0,
-                0,
-                0
-            ); //draw
+            for(int k = 0; k != p_data->m_models[j].shapes.size(); ++k)
+            {
+                vkCmdBindVertexBuffers(
+                    m_commandBuffers[i],
+                    0,
+                    1,
+                    &(p_data->m_vertexBuffers[j][k]),
+                    &(p_data->m_vertexBufferOffsets[j][k])
+                ); //vertice
+                vkCmdBindIndexBuffer(
+                    m_commandBuffers[i],
+                    p_data->m_indexBuffers[j][k],
+                    p_data->m_indexBufferOffsets[j][k],
+                    VK_INDEX_TYPE_UINT32//VK_INDEX_TYPE_UINT16
+                ); //indice
+                vkCmdBindDescriptorSets(
+                    m_commandBuffers[i],
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    m_pipeline.m_pipelineLayout,
+                    0,
+                    1,
+                    &(m_pipeline.m_descriptorSets[p_data->m_models[j].shapes[k].id]/*i]*/),
+                    0,
+                    nullptr
+                ); //uniform
+                vkCmdDrawIndexed( //vkCmdDraw
+                    m_commandBuffers[i],
+                    p_data->m_models[j].shapes[k].indice.size(),
+                    1,
+                    0,
+                    0,
+                    0
+                ); //draw
+            }
         }
         
         vkCmdEndRenderPass(m_commandBuffers[i]);

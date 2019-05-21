@@ -19,6 +19,8 @@
 #include "../core/VkInstance.hpp"
 //#include "../core/data/Data.hpp"
 
+#include <vector>
+
 _x_NS_START_
 
 class c_eventMgr
@@ -32,13 +34,13 @@ public_fun:
 
     t_S32 f_createNewModel()
     {
-        c_vk_model::t_model model;
+        c_vk_model::t_Model model;
         p_vk->m_data.m_models.push_back(model);
         return p_vk->m_data.m_models.size() - 1;
     }
     void f_setVertShader(const char * str, t_S32 index);
     void f_setFragShader(const char * str, t_S32 index);
-    void f_setTextures(const char ** strs, t_U32 textureCount, t_S32 index);
+    void f_setTextures(::std::vector<::std::vector<const char *>> & strs, t_S32 index);
     void f_setModel(const char * str, t_S32 index);
 
     void f_updateUniform();

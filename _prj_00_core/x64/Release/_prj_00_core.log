@@ -1,3 +1,5 @@
-﻿  Link.cpp
-d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(36): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_model”的左侧
+﻿  GraphicsPipeline.cpp
+d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(35): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_Shape”的左侧
+d:\xprogramgit\2019vulkanxprj\source\core\data\model.hpp(42): warning C4091: “typedef ”: 没有声明变量时忽略“x_NS::c_vk_model::t_Model”的左侧
+d:\xprogramgit\2019vulkanxprj\source\core\graphicspipeline.cpp(398): warning C4267: “=”: 从“size_t”转换到“uint32_t”，可能丢失数据
   _prj_00_core.vcxproj -> D:\xProgramGit\2019VulkanXPrj\_lib_internal\xcore.lib
