@@ -46,8 +46,8 @@
 
 #define __XVK_WINDOW_RESIZE__  __XVK_ENABLE__ //whether enable windowResize
 #define __XVK_WINDOW_CMD__  __XVK_ENABLE__
-#define __XVK_MIPMAP__  __XVK_DISABLE__
-#define __XVK_MSAA__  __XVK_DISABLE__
+#define __XVK_MIPMAP__  __XVK_ENABLE__
+#define __XVK_MSAA__  __XVK_ENABLE__
 #define DEBUG_MODE_X  //<<<<<<<<--------- Debug Define
 #define PROJECT_NUMBER 1
 

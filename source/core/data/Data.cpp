@@ -66,6 +66,7 @@ void c_vk_data::f_createVertexBuffer()
         for(int j = 0; j != m_models[i].shapes.size(); ++j)
         {
             vertexCount = static_cast<t_U32>(m_models[i].shapes[j].vertice.size());
+            
             VkDeviceSize bufferSize = sizeof(t_Vertex) * vertexCount;
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
@@ -121,6 +122,7 @@ void c_vk_data::f_createIndexBuffer()
         for(int j = 0; j != m_models[i].shapes.size(); ++j)
         {
             VkDeviceSize bufferSize = sizeof(t_U32) * m_models[i].shapes[j].indice.size();
+
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
 

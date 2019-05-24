@@ -45,6 +45,15 @@ public_fun:
         m_mgr.f_setModel(objPath, modelIndex);
     }
 
+    void setPrinterData(const char * vertPath, const char * fragPath, const char * texturePath)
+    {
+        auto modelIndex = m_mgr.f_createNewModel();
+        m_mgr.f_setVertShader(vertPath, modelIndex);
+        m_mgr.f_setFragShader(fragPath, modelIndex);
+        m_mgr.f_setPrinterTextures(texturePath, modelIndex);
+        m_mgr.f_setPrinterModel(modelIndex);
+    }
+
     void initVulkan(t_U32 width, t_U32 height, const char * title)
     {
         c_vk::c_vk_xdesc vkDesc = {};
@@ -63,6 +72,7 @@ public_fun:
         while (m_vk.is_glfwShouldNotClose())
         {
             m_vk.f_glfwPollEvents();
+            m_mgr.f_processPrinterInput();
             m_mgr.f_updateUniform();
             m_vk.f_loopBody();
         }

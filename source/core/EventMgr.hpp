@@ -42,7 +42,11 @@ public_fun:
     void f_setFragShader(const char * str, t_S32 index);
     void f_setTextures(::std::vector<::std::vector<const char *>> & strs, t_S32 index);
     void f_setModel(const char * str, t_S32 index);
+    void f_setPrinterTextures(const char * str, t_S32 index);
+    void f_setPrinterModel(t_S32 index);
 
+    void f_processPrinterInput();
+    void f_updatePrinterData();
     void f_updateUniform();
 
 private_mem:

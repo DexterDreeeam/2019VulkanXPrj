@@ -22,6 +22,7 @@
 #include "../../core/data/Model.hpp"
 #include <vector>
 #include <array>
+#include <map>
 #include <chrono>
 #include <algorithm>
 
@@ -83,6 +84,11 @@ private_mem:
     ::std::vector<c_vk_model::t_Model> m_models;
 
     t_U32 m_shapesCount = 0;
+
+    ::std::map<char, ::std::array<t_F32, 2>> m_printerSamplerTable;
+    t_U32 m_printerModelIndex;
+    t_U32 m_printerInputRow = 0;
+    t_U32 m_printerInputColumn = 0;
 
 private_fun:
     //--------- vertex buffer ---------//
